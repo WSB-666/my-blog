@@ -35,10 +35,10 @@ export default defineAstroPaperConfig({
   },
   // 页头/页脚显示的社交账号，把链接换成你自己的；不需要的整行删除
   socials: [
-    { name: "github",   url: "https://github.com/your-username" },
-    { name: "x",        url: "https://x.com/your-username" },
-    { name: "linkedin", url: "https://www.linkedin.com/in/your-username/" },
-    { name: "mail",     url: "mailto:yourmail@gmail.com" },
+    { name: "github", url: "https://github.com/WSB-666" },
+    // 需要其他账号时，取消注释并改成你的链接：
+    // { name: "x",    url: "https://x.com/你的用户名" },
+    // { name: "mail", url: "mailto:你的邮箱@gmail.com" },
   ],
   // 文章页底部的分享按钮
   shareLinks: [
