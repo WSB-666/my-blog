@@ -40,16 +40,12 @@ export default {
   pages: {
     tagTitle: "标签",
     tagDesc: "包含标签",
-
     tagsTitle: "标签",
     tagsDesc: "文章中使用的所有标签。",
-
     postsTitle: "文章",
     postsDesc: "我发布的所有文章。",
-
     archivesTitle: "归档",
     archivesDesc: "按时间归档的所有文章。",
-
     searchTitle: "搜索",
     searchDesc: "搜索任意文章……",
   },
