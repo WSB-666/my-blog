@@ -20,6 +20,7 @@ import config from "./astro-paper.config";
 
 export default defineConfig({
   site: config.site.url,
+  base: "/my-blog/",
   integrations: [
     mdx(),
     sitemap({

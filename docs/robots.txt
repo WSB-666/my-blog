@@ -1,0 +1,5 @@
+
+User-agent: *
+Allow: /
+
+Sitemap: https://wsb-666.github.io/my-blog/sitemap-index.xml

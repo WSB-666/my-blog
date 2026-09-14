@@ -2,7 +2,7 @@ import { defineAstroPaperConfig } from "./src/types/config";
 
 export default defineAstroPaperConfig({
   site: {
-    url: "https://example.com/",
+    url: "https://wsb-666.github.io/my-blog/",
     title: "我的博客",
     description: "一个简洁、响应式且对 SEO 友好的个人博客。",
     author: "博主",
