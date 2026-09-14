@@ -1,36 +1,32 @@
 ---
-import { getEntry, render } from "astro:content";
-import Layout from "@/layouts/Layout.astro";
-import Header from "@/components/Header.astro";
-import Breadcrumb from "@/components/Breadcrumb.astro";
-import Main from "@/components/Main.astro";
-import Footer from "@/components/Footer.astro";
-import config from "@/config";
+import PageLayout from "@/layouts/Base.astro";
 
-const about = await getEntry("pages", "about");
-
-if (!about) {
-  throw new Error(
-    "Missing content entry: `about.md` or `about.mdx` in `src/content/pages/`"
-  );
-}
-
-const { Content } = await render(about);
+const meta = {
+	description: "关于我和这个博客",
+	title: "关于",
+};
 ---
 
-<Layout
-  title={`${about.data.title} | ${config.site.title}`}
-  description={about.data.description}
-  ogImage={about.data.ogImage}
-  canonicalURL={about.data.canonicalURL}
->
-  <Header />
-
-  <Breadcrumb />
-
-  <Main pageTitle={about.data.title} class="app-prose">
-    <Content />
-  </Main>
-
-  <Footer />
-</Layout>
+<PageLayout meta={meta}>
+	<h1 class="title mb-12">关于</h1>
+	<div class="prose prose-sm prose-cactus max-w-none">
+		<p>你好，欢迎来到我的博客 👋</p>
+		<p>我会在这里记录：</p>
+		<ul class="list-inside list-disc" role="list">
+			<li>技术学习笔记和踩坑记录</li>
+			<li>自己做的小项目</li>
+			<li>读书、生活与一些随手的想法</li>
+		</ul>
+		<p>这个博客使用 Astro 静态生成，页面简洁、加载很快，还支持深色模式和全文搜索。</p>
+		<p>
+			欢迎通过页头的
+			<a
+				class="cactus-link inline-block"
+				href="https://github.com/WSB-666"
+				rel="noreferrer"
+				target="_blank">GitHub 主页</a
+			>
+			联系我。
+		</p>
+	</div>
+</PageLayout>

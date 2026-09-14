@@ -1,22 +1,16 @@
-## Development
+# Astro Cactus 极简博客
 
-When starting the dev server, use background mode:
+基于 [astro-cactus](https://github.com/chrismwilliams/astro-theme-cactus) 的中文个人博客。
 
+## 常用命令
+
+```bash
+npm install      # 安装依赖
+npm run dev      # 本地开发
+npm run build    # 构建（产物在 dist/）
+npm run preview  # 预览构建产物
 ```
-astro dev --background
-```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+## 发布
 
-## Documentation
-
-Full documentation: https://docs.astro.build
-
-Consult these guides before working on related tasks:
-
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+构建产物需复制到 `docs/` 目录后提交推送，GitHub Pages 从 main 分支 `docs/` 目录发布，网址：https://wsb-666.github.io/my-blog/

@@ -1,0 +1,26 @@
+{
+  "name": "我的博客",
+  "icons": [
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "description": "记录技术学习、项目开发和生活感悟的个人博客",
+  "lang": "zh-CN",
+  "start_url": "/my-blog/",
+  "theme_color": "#2bbc8a",
+  "background_color": "#1d1f21",
+  "display": "standalone"
+}

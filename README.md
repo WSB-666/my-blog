@@ -1,166 +1,238 @@
-# AstroPaper 📄
+<div align="center">
+  <img alt="Astro Cactus logo" src="https://github.com/user-attachments/assets/92dfbabf-ca65-4bf6-991d-9a71e5319880" width="70" />
+</div>
+<h1 align="center">
+  Astro Cactus
+</h1>
 
-![AstroPaper](public/default-og.jpg)
-[![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)](https://www.figma.com/community/file/1356898632249991861)
-![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![GitHub](https://img.shields.io/github/license/satnaing/astro-paper?color=%232F3741&style=for-the-badge)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white&style=for-the-badge)](https://conventionalcommits.org)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=for-the-badge)](http://commitizen.github.io/cz-cli/)
+Astro Cactus is a simple opinionated starter built with [Astro](https://astro.build). Use it to create an easy-to-use blog or website.
 
-AstroPaper is a minimal, responsive, accessible and SEO-friendly Astro blog theme. This theme is designed and crafted based on [my personal blog](https://satnaing.dev/blog).
+## Table Of Contents
 
-Read [the blog posts](https://astro-paper.pages.dev/posts/) or check [the README Documentation Section](#-documentation) for more info.
+1. [Key Features](#key-features)
+2. [Demo](#demo-)
+3. [Quick start](#quick-start)
+4. [Preview](#preview)
+5. [Commands](#commands)
+6. [Configure](#configure)
+7. [Updating](#updating)
+8. [Adding posts, notes, and tags](#adding-posts-notes-and-tags)
+   - [Post Frontmatter](#post-frontmatter)
+   - [Note Frontmatter](#note-frontmatter)
+   - [Tag Frontmatter](#tag-frontmatter)
+   - [Frontmatter Snippets](#frontmatter-snippets)
+9. [Pagefind search](#pagefind-search)
+10. [Analytics](#analytics)
+11. [Deploy](#deploy)
+12. [Acknowledgment](#acknowledgment)
 
-## 🔥 Features
+## Key Features
 
-- [x] type-safe markdown
-- [x] super fast performance
-- [x] accessible (Keyboard/VoiceOver)
-- [x] responsive (mobile ~ desktops)
-- [x] SEO-friendly
-- [x] light & dark mode
-- [x] static search ([Pagefind](https://pagefind.app/))
-- [x] draft posts & pagination
-- [x] sitemap & rss feed
-- [x] MDX support
-- [x] collapsible table of contents
-- [x] followed best practices
-- [x] highly customizable
-- [x] dynamic OG image generation for blog posts ([Blog Post](https://astro-paper.pages.dev/posts/dynamic-og-image-generation-in-astropaper-blog-posts/))
-- [x] i18n ready
+- Astro v6 Fast 🚀
+- Tailwind v4
+- Accessible, semantic HTML markup
+- Responsive & SEO-friendly
+- Dark & Light mode
+- MD & [MDX](https://docs.astro.build/en/guides/markdown-content/#mdx-only-features) posts & notes
+  - Includes [Admonitions](https://astro-cactus.chriswilliams.dev/posts/markdown-elements/admonitions/)
+- [Satori](https://github.com/vercel/satori) for creating open graph png images
+- [Automatic RSS feeds](https://docs.astro.build/en/guides/rss)
+- [Webmentions](https://webmention.io/)
+- Auto-generated:
+  - [sitemap](https://docs.astro.build/en/guides/integrations-guide/sitemap/)
+  - [robots.txt](https://github.com/alextim/astro-lib/blob/main/packages/astro-robots-txt/README.md)
+  - [web app manifest](https://github.com/alextim/astro-lib/blob/main/packages/astro-webmanifest/README.md)
+- [Pagefind](https://pagefind.app/) static search library integration
+- [Astro Icon](https://github.com/natemoo-re/astro-icon) svg icon component
+- [Expressive Code](https://expressive-code.com/) code blocks and syntax highlighter
 
-_Note: I've tested screen-reader accessibility of AstroPaper using **VoiceOver** on Mac and **TalkBack** on Android. I couldn't test all other screen-readers out there. However, accessibility enhancements in AstroPaper should be working fine on others as well._
+## Demo 💻
 
-## ✅ Lighthouse Score
+Check out the [Demo](https://astro-cactus.chriswilliams.dev/), hosted on Netlify
 
-<p align="center">
-  <a href="https://pagespeed.web.dev/report?url=https%3A%2F%2Fastro-paper.pages.dev%2F&form_factor=desktop">
-    <img width="710" alt="AstroPaper Lighthouse Score" src="AstroPaper-lighthouse-score.svg">
-  </a>
-</p>
+## Quick start
 
-## 🚀 Project Structure
-
-Inside of AstroPaper, you'll see the following folders and files:
-
-```bash
-/
-├── public/
-│   ├── pagefind/          # auto-generated on build
-│   ├── favicon.svg
-│   └── default-og.jpg
-├── src/
-│   ├── assets/
-│   │   ├── icons/
-│   │   └── images/
-│   ├── components/
-│   ├── content/
-│   │   ├── pages/
-│   │   │   └── about.md
-│   │   └── posts/
-│   │       └── some-blog-posts.md
-│   ├── i18n/
-│   ├── layouts/
-│   ├── pages/
-│   ├── scripts/
-│   ├── styles/
-│   ├── types/
-│   ├── utils/
-│   ├── config.ts
-│   └── content.config.ts
-├── astro-paper.config.ts  # user-defined configurations
-└── astro.config.ts
-```
-
-All blog posts are stored in the `src/content/posts/` directory. You can organise posts into subdirectories — the subdirectory name becomes part of the post URL.
-
-## 📖 Documentation
-
-Documentation can be read in two formats\_ _markdown_ & _blog post_.
-
-- Configuration - [markdown](src/content/posts/how-to-configure-astropaper-theme.md) | [blog post](https://astro-paper.pages.dev/posts/how-to-configure-astropaper-theme/)
-- Add Posts - [markdown](src/content/posts/adding-new-post.md) | [blog post](https://astro-paper.pages.dev/posts/adding-new-posts-in-astropaper-theme/)
-- Customize Color Schemes - [markdown](src/content/posts/customizing-astropaper-theme-color-schemes.md) | [blog post](https://astro-paper.pages.dev/posts/customizing-astropaper-theme-color-schemes/)
-- Predefined Color Schemes - [markdown](src/content/posts/predefined-color-schemes.md) | [blog post](https://astro-paper.pages.dev/posts/predefined-color-schemes/)
-
-## 💻 Tech Stack
-
-**Main Framework** - [Astro](https://astro.build/)  
-**Type Checking** - [TypeScript](https://www.typescriptlang.org/)  
-**Styling** - [TailwindCSS](https://tailwindcss.com/)  
-**UI/UX** - [Figma Design File](https://www.figma.com/community/file/1356898632249991861)  
-**Static Search** - [Pagefind](https://pagefind.app/)  
-**Icons** - [Tablers](https://tabler-icons.io/)  
-**Code Formatting** - [Prettier](https://prettier.io/)  
-**Deployment** - [Cloudflare Pages](https://pages.cloudflare.com/)  
-**Linting** - [ESLint](https://eslint.org)  
-**Dynamic OG images** - [Satori](https://github.com/vercel/satori) + [Sharp](https://sharp.pixelplumbing.com/) + [Astro Fonts](https://docs.astro.build/en/guides/fonts/)
-
-## 👨🏻‍💻 Running Locally
-
-You can start using this project locally by running the following command in your desired directory:
+[Create a new repo](https://github.com/chrismwilliams/astro-theme-cactus/generate) from this template.
 
 ```bash
+# npm 7+
+npm create astro@latest -- --template chrismwilliams/astro-theme-cactus
+
 # pnpm
-pnpm create astro@latest --template satnaing/astro-paper
-
-# npm
-npm create astro@latest -- --template satnaing/astro-paper
-
-# yarn
-yarn create astro --template satnaing/astro-paper
-
-# bun
-bun create astro@latest -- --template satnaing/astro-paper
+pnpm dlx create-astro --template chrismwilliams/astro-theme-cactus
 ```
 
-Then start the project by running the following commands:
+[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/chrismwilliams/astro-theme-cactus) [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fchrismwilliams%2Fastro-theme-cactus&project-name=astro-theme-cactus)
 
-```bash
-# install dependencies if you haven't done so in the previous step.
-pnpm install
+## Preview
 
-# start running the project
-pnpm dev
+![Astro Theme Cactus in a light theme mode](https://github.com/chrismwilliams/astro-theme-cactus/assets/12715988/84c89d42-4525-4674-b10c-6d6ebdc06382)
+
+![Astro Theme Cactus in a dark theme mode](https://github.com/chrismwilliams/astro-theme-cactus/assets/12715988/e0e575e2-445f-4c2d-a812-b5b53d2d9031)
+
+## Commands
+
+Replace pnpm with your choice of npm / yarn
+
+| Command          | Action                                                         |
+| :--------------- | :------------------------------------------------------------- |
+| `pnpm install`   | Installs dependencies                                          |
+| `pnpm dev`       | Starts local dev server at `localhost:3000`                    |
+| `pnpm build`     | Build your production site to `./dist/`                        |
+| `pnpm postbuild` | Pagefind script to build the static search of your blog posts  |
+| `pnpm preview`   | Preview your build locally, before deploying                   |
+| `pnpm sync`      | Generate types based on your config in `src/content/config.ts` |
+
+## Configure
+
+- Edit the template's config file `src/site.config.ts`
+  - **Important**: set the url property with your own domain.
+  - Modify the settings for markdown code blocks, generated by [Expressive Code](https://expressive-code.com). Astro Cactus has both a dark (dracula) and light (github-light) theme. You can find more options [@ expressive-code](https://expressive-code.com/guides/themes/#available-themes).
+- Update file `astro.config.ts`
+  - [astro-webmanifest options](https://github.com/alextim/astro-lib/blob/main/packages/astro-webmanifest/README.md)
+- Replace & update files within the `/public` folder:
+  - icon.svg - used as the source to create favicons & manifest icons
+  - social-card.png - used as the default og:image
+- Modify file `src/styles/global.css` with your own light and dark styles, and customise [Tailwind's theme settings](https://tailwindcss.com/docs/theme#customizing-your-theme).
+- Edit social links in `src/components/SocialList.astro` to add/replace your media profile. Icons can be found @ [icones.js.org](https://icones.js.org/), per [Astro Icon's instructions](https://www.astroicon.dev/guides/customization/#find-an-icon-set).
+- Create/edit posts & notes for your blog within `src/content/post/` & `src/content/note/` with .md/mdx file(s). See [below](#adding-posts-notes-and-tags) for more details.
+  - Read [this post](http://astro-cactus.chriswilliams.dev/posts/webmentions/) for adding webmentions to your site.
+  - Add any custom Tag pages for related blog posts in `/src/content/tag/`, ensuring that the file name is the same as the tag.
+- OG Image:
+  - If you would like to change the style of the generated image the Satori library creates, open up `src/pages/og-image/_ogMarkup.ts` to the markup function where you can edit the html/tailwind-classes as necessary. You can use this [playground](https://og-playground.vercel.app/) to aid your design.
+  - You can also create your own og images and skip satori generating it for you by adding an ogImage property in the frontmatter with a link to the asset, an example can be found in `src/content/post/testing/social-image.md`. More info on frontmatter can be found [below](#post-frontmatter)
+- Optional:
+  - Fonts: This theme sets the body element to the font family `font-mono`, in `src/layouts/Base.astro` on the `<body>`. You can change fonts by removing the variant `font-mono`, after which TailwindCSS will default to the `font-sans` [font family stack](https://tailwindcss.com/docs/font-family).
+
+## Updating
+
+If you've forked the template, you can [sync the fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork) with your own project, remembering to **not** click Discard Changes as you will lose your own.
+
+If you have a template repository, you can add this template as a remote, [as discussed here](https://stackoverflow.com/questions/56577184/github-pull-changes-from-a-template-repository).
+
+## Adding posts, notes, and tags
+
+This theme uses [Content Collections](https://docs.astro.build/en/guides/content-collections/) to organise local Markdown and MDX files, as well as type-checking frontmatter with a schema -> `src/content.config.ts`.
+
+Adding a post/note/tag is as simple as adding your .md(x) files to either `src/content/post`, `src/content/note`, and `src/content/tag` folders, the filename of which will be used as the slug/url.
+
+The Tag collection allows you to override the content for generated tag pages. For example the template includes `src/content/tag/test.md` which overrides the content shown in `your-domain.com/tags/test`.
+
+> **Note**
+> For a tag page to work, the file name (`src/content/tag/*`) must also be in a post's [tags frontmatter.](#post-frontmatter)
+
+The posts/notes/tags included with this template are there as an example of how to structure your frontmatter. Additionally, the [Astro docs](https://docs.astro.build/en/guides/markdown-content/) has a detailed section on markdown pages.
+
+### Post Frontmatter
+
+| Property (\* required) | Description                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| title \*               | Self explanatory. Used as the text link to the post, the h1 on the posts' page, and the pages title property. Has a max length of 60 chars, set in `src/content/config.ts`                                                                                                                                   |
+| description \*         | Similar to above, used as the seo description property. Has a min length of 50 and a max length of 160 chars, set in the post schema.                                                                                                                                                                        |
+| publishDate \*         | Again pretty simple. To change the date format/locale, currently **en-GB**, update the date option in `src/site.config.ts`. Note you can also pass additional options to the component `<FormattedDate>` if required.                                                                                        |
+| updatedDate            | This is an optional date representing when a post has been updated, in the same format as the publishDate.                                                                                                                                                                                                   |
+| tags                   | Tags are optional with any created post. Any new tag(s) will be shown in `your-domain.com/posts` & `your-domain.com/tags`, and generate the page(s) `your-domain.com/tags/[yourTag]`                                                                                                                         |
+| coverImage             | This is an optional object that will add a cover image to the top of a post. Include both a `src`: "_path-to-image_" and `alt`: "_image alt_". You can view an example in `src/content/post/testing/cover-image/index.md`.                                                                                                 |
+| ogImage                | This is an optional property. An OG Image will be generated automatically for every post where this property **isn't** provided. If you would like to create your own for a specific post, include this property and a link to your image, the theme will then skip automatically generating one.            |
+| draft                  | This is an optional property as it is set to false by default in the schema. By adding true, the post will be filtered out of the production build in a number of places, inc. getAllPosts() calls, og-images, rss feeds, and generated page[s]. You can view an example in `src/content/post/testing/draft-post.md` |
+
+### Note Frontmatter
+
+| Property (\* required) | Description                                                                                                           |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| title \*               | Used as the link text to the note, the pages title property, and the h1 of said note page. Has a max length 60 chars. |
+| description            | Optional. Used for the head meta description property.                                                                |
+| publishDate \*         | ISO 8601 format with offsets allowed.                                                                                 |
+
+### Tag Frontmatter
+
+| Property (\* required) | Description                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| title                  | Optional. Used as the h1 on the tags' page, and the pages title property. Has a max length of 60 chars. |
+| description            | Optional. Used for the head meta description and the first paragraph under the h1.                      |
+
+### Frontmatter snippets
+
+Astro Cactus includes a helpful VSCode snippet which creates a frontmatter 'stub' for posts and note's, found here -> `.vscode/post.code-snippets`. Start typing the word `frontmatter` on your newly created .md(x) file to trigger it. Visual Studio Code snippets appear in IntelliSense via (⌃Space) on mac, (Ctrl+Space) on windows.
+
+## Pagefind search
+
+This integration brings a static search feature for searching blog posts and notes. In its current form, pagefind only works once the site has been built. This theme adds a postbuild script that should be run after Astro has built the site. You can preview locally by running both build && postbuild.
+
+Search results only includes pages from posts and notes. If you would like to include other/all your pages, remove/re-locate the attribute `data-pagefind-body` to the article tag found in `src/layouts/BlogPost.astro` and `src/components/note/Note.astro`.
+
+It also allows you to filter posts by tags added in the frontmatter of blog posts. If you would rather remove this, remove the data attribute `data-pagefind-filter="tag"` from the link in `src/components/blog/Masthead.astro`.
+
+If you would rather not include this integration, simply remove the component `src/components/Search.astro`, and uninstall both `@pagefind/default-ui` & `pagefind` from package.json. You will also need to remove the postbuild script from here as well.
+
+You can reduce the initial css payload of your css, [as demonstrated here](https://github.com/chrismwilliams/astro-theme-cactus/pull/145#issue-1943779868), by lazy loading the web components styles.
+
+## Analytics
+
+You may want to track the number of visitors you receive to your blog/website in order to understand trends and popular posts/pages you've created. There are a number of providers out there one could use, including web hosts such as [vercel](https://vercel.com/analytics), [netlify](https://www.netlify.com/products/analytics/), and [cloudflare](https://www.cloudflare.com/web-analytics/).
+
+This theme/template doesn't include a specific solution due to there being a number of use cases and/or options which some people may or may not use.
+
+You may be asked to included a snippet inside the **HEAD** tag of your website when setting it up, which can be found in `src/layouts/Base.astro`. Alternatively, you can add the snippet in `src/components/BaseHead.astro`.
+
+## Deploy
+
+For guidence, the [Astro docs](https://docs.astro.build/en/guides/deploy/) has a great breakdown of how to deploy your own Astro site on various platforms and their idiosyncrasies.
+
+By default, the theme prerenders all pages and endpoints, with the [`'static'` output](https://docs.astro.build/en/reference/configuration-reference/#output), and the [`'./dist'`](https://docs.astro.build/en/reference/configuration-reference/#outdir) output directory.
+
+You do not need to add any adapter to use this theme.
+
+### Cloudflare Workers
+
+If deploying via Cloudflare Workers, you may have [issues](https://github.com/chrismwilliams/astro-theme-cactus/issues/454) with regards to the OG image endpoints and it requiring a Node environment. To solve this, you will need to add a [Wrangler configuration file](https://developers.cloudflare.com/workers/framework-guides/web-apps/astro/#if-you-have-a-static-site) for a static build.
+
+```jsonc
+{
+  "name": "astro-cactus",
+  // Set this to today's date
+  "compatibility_date": "2026-05-11",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
 ```
 
-## Google Site Verification (optional)
+If you are intending to use the [Clouflare adapter](https://docs.astro.build/en/guides/integrations-guide/cloudflare/), please set the [`prerenderEnvironment`](https://docs.astro.build/en/guides/integrations-guide/cloudflare/#prerenderenvironment) to `'node'`, and follow the [Cloudflare docs](https://developers.cloudflare.com/workers/framework-guides/web-apps/astro/#if-your-site-uses-on-demand-rendering).
 
-You can add your [Google Site Verification HTML tag](https://support.google.com/webmasters/answer/9008080#meta_tag_verification&zippy=%2Chtml-tag) by setting `site.googleVerification` in `astro-paper.config.ts`:
+> Please note the `nodejs_compat` flag, and the main entry point which is incorrect on Cloudflare's docs at the time of writing.
 
-```ts file="astro-paper.config.ts"
-export default defineAstroPaperConfig({
-  site: {
-    // ...
-    googleVerification: "your-google-site-verification-value",
+```jsonc
+{
+  "name": "astro-cactus",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  // Set this to today's date
+  "compatibility_date": "2026-05-11",
+  "compatibility_flags": ["global_fetch_strictly_public", "nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "not_found_handling": "404-page"
   },
-  // ...
-});
+  "observability": {
+    "enabled": true
+  }
+}
 ```
 
-> See [this discussion](https://github.com/satnaing/astro-paper/discussions/334#discussioncomment-10139247) for adding AstroPaper to the Google Search Console.
+### Subdirectory deployment
 
-## 🧞 Commands
+This theme doesn't handle subdirectory/base-path deployments (e.g. GitHub Pages project sites) out of the box and will cause [issues](https://github.com/chrismwilliams/astro-theme-cactus/pull/480).
 
-All commands are run from the root of the project, from a terminal:
+All internal links are root-absolute and don't take into account `base` path values.
 
-| Command          | Action                                                                                                                           |
-| :--------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm install`   | Installs dependencies                                                                                                            |
-| `pnpm dev`       | Starts local dev server at `localhost:4321`                                                                                      |
-| `pnpm build`     | Type-checks, builds the site, runs Pagefind indexing, and copies the index to `public/pagefind/`                                 |
-| `pnpm preview`   | Preview your build locally, before deploying                                                                                     |
-| `pnpm sync`      | Generates TypeScript types for all Astro modules. [Learn more](https://docs.astro.build/en/reference/cli-reference/#astro-sync). |
-| `pnpm astro ...` | Run CLI commands like `astro add`, `astro check`                                                                                 |
+See Astro's docs on [base](https://docs.astro.build/en/reference/configuration-reference/#base) and [internal linking](https://docs.astro.build/en/guides/deploy/github/#how-to-deploy) if you require this.
 
-## ✨ Feedback & Suggestions
+## Acknowledgment
 
-If you have any suggestions/feedback, you can contact me via [my email](mailto:satnaingdev+astropaper@gmail.com). Alternatively, feel free to open an issue if you find bugs or want to request new features.
+This theme was inspired by [Hexo Theme Cactus](https://github.com/probberechts/hexo-theme-cactus)
 
-## 📜 License
+## License
 
-Licensed under the MIT License, Copyright © 2026
-
----
-
-Made with 🤍 by [Sat Naing](https://satnaing.dev) 👨🏻‍💻 and [contributors](https://github.com/satnaing/astro-paper/graphs/contributors).
+MIT
