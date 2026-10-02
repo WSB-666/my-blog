@@ -5,9 +5,9 @@ export const siteConfig: SiteConfig = {
 	// 网站网址，部署到 GitHub Pages 后的正式地址
 	url: "https://wsb-666.github.io/my-blog/",
 	// 网站名称（浏览器标签、页头、页脚都会用到）
-	title: "我的博客",
+	title: "翠速小筑",
 	// 作者名
-	author: "博主",
+	author: "WSB-666",
 	// 网站一句话介绍
 	description: "记录技术学习、项目开发和生活感悟的个人博客",
 	// 页面语言
