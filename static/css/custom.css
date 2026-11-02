@@ -13,5 +13,5 @@
 }
 
 html.dark #dream-global-bg::after {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.30), rgba(0, 0, 0, 0.50));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.58));
 }
