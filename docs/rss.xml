@@ -1,1 +1,52 @@
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>翠速小筑</title><description>记录技术学习、项目开发和生活感悟的个人博客</description><link>https://wsb-666.github.io/my-blog/</link><item><title>你好，世界：我的第一篇博客</title><link>https://wsb-666.github.io/my-blog/posts/hello-world/</link><guid isPermaLink="true">https://wsb-666.github.io/my-blog/posts/hello-world/</guid><description>这是博客的第一篇文章，用来演示文章格式。欢迎随时编辑或删除它。</description><pubDate>Mon, 14 Sep 2026 12:00:00 GMT</pubDate></item><item><title>为什么我改了 a，b 也跟着变了？——把 Python 的变量和对象讲清楚</title><link>https://wsb-666.github.io/my-blog/posts/post1/</link><guid isPermaLink="true">https://wsb-666.github.io/my-blog/posts/post1/</guid><description>从一次「改了 a 却影响 b」的疑惑出发，讲清 Python 的变量到底是什么、可变与不可变的分界线在哪、浅拷贝为什么不够、以及函数默认参数那个经典坑。</description><pubDate>Thu, 24 Sep 2026 04:00:00 GMT</pubDate></item><item><title>ROS 2 里的 TF 变换：一只杯子为什么不能直接说「在这里」</title><link>https://wsb-666.github.io/my-blog/posts/post2/</link><guid isPermaLink="true">https://wsb-666.github.io/my-blog/posts/post2/</guid><description>从「两个坐标为什么不能直接相加」出发，用日常场景讲清坐标系、TF 树、四元数、时间戳，以及 tf2 的常用 API 和最常遇到的几类报错。</description><pubDate>Fri, 02 Oct 2026 04:00:00 GMT</pubDate></item><item><title>我花了一周，把一台机器人&quot;造&quot;进了电脑里</title><link>https://wsb-666.github.io/my-blog/posts/post3/</link><guid isPermaLink="true">https://wsb-666.github.io/my-blog/posts/post3/</guid><description>从&quot;在 ROS2 里，一台机器人首先是一堆 XML&quot;讲起，把 URDF 建模、Xacro 复用、Gazebo 加载、ros2_control 控制、launch 编排串成完整链路，并对比另一台只有 1 个 link、0 个关节的无人机模型。</description><pubDate>Mon, 12 Oct 2026 04:00:00 GMT</pubDate></item><item><title>机器人的&quot;我在哪&quot;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工</title><link>https://wsb-666.github.io/my-blog/posts/post4/</link><guid isPermaLink="true">https://wsb-666.github.io/my-blog/posts/post4/</guid><description>从贝叶斯滤波这个&quot;祖宗&quot;讲起，把 KF/EKF/UKF 和粒子滤波（AMCL）在假设、信念表示、计算量上的区别一次讲清，再看它们在 robot_localization 和 Nav2 里各自站哪一环。</description><pubDate>Sat, 24 Oct 2026 04:00:00 GMT</pubDate></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>翠速小筑</title>
+		<link>https://wsb-666.github.io/my-blog/</link>
+		<description>Recent content on 翠速小筑</description>
+		<generator>Hugo</generator>
+		<language>zh-Hans</language>
+		
+		
+		
+		
+			<lastBuildDate>Sat, 24 Oct 2026 12:00:00 +0800</lastBuildDate>
+		
+			<atom:link href="https://wsb-666.github.io/my-blog/rss.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>机器人的&#34;我在哪&#34;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工</title>
+				<link>https://wsb-666.github.io/my-blog/posts/post4/</link>
+				<pubDate>Sat, 24 Oct 2026 12:00:00 +0800</pubDate>
+				<guid>https://wsb-666.github.io/my-blog/posts/post4/</guid>
+				<description>&lt;p&gt;上一篇我把一台机器人&amp;quot;造&amp;quot;进了电脑：URDF 是骨架，Gazebo 是皮肉，ros2_control 是神经。造完之后发现一个更尴尬的事——&lt;strong&gt;这台机器人不知道自己在哪&lt;/strong&gt;。&lt;/p&gt;&#xA;&lt;p&gt;你可能说：轮速里程计不是一直在发 &lt;code&gt;odom → base_link&lt;/code&gt; 的 tf 吗？问题是，让小车原地转两圈再回原点，你会发现它&amp;quot;回家&amp;quot;的位置偏了。轮子打滑、地面摩擦不均，这些误差&lt;strong&gt;只进不出&lt;/strong&gt;，越积越多。IMU 更别提，便宜 MEMS 陀螺仪的零偏漂移，放一晚上能给你漂出十几度。&lt;/p&gt;&#xA;&lt;p&gt;传感器个个都&amp;quot;半信半疑&amp;quot;，那就需要一门手艺：&lt;strong&gt;把多个不靠谱的信息源，融合成一个靠谱的状态估计&lt;/strong&gt;。这就是滤波器在机器人里干的活。&lt;/p&gt;&#xA;&lt;p&gt;这篇把 ROS2 里最常打交道的几类滤波器捋一遍：它们分属哪个门派、假设是什么、在软件栈里各自站在哪一环。&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>我花了一周，把一台机器人&#34;造&#34;进了电脑里</title>
+				<link>https://wsb-666.github.io/my-blog/posts/post3/</link>
+				<pubDate>Mon, 12 Oct 2026 12:00:00 +0800</pubDate>
+				<guid>https://wsb-666.github.io/my-blog/posts/post3/</guid>
+				<description>&lt;blockquote&gt;&#xA;    &lt;p&gt;ROS2 学习笔记 · 建模与仿真的完整链路&#xA;2026-10-12&lt;/p&gt;&#xA;&#xA;  &lt;/blockquote&gt;&#xA;&#xA;&lt;hr&gt;</description>
+			</item>
+			<item>
+				<title>ROS 2 里的 TF 变换：一只杯子为什么不能直接说「在这里」</title>
+				<link>https://wsb-666.github.io/my-blog/posts/post2/</link>
+				<pubDate>Fri, 02 Oct 2026 12:00:00 +0800</pubDate>
+				<guid>https://wsb-666.github.io/my-blog/posts/post2/</guid>
+				<description></description>
+			</item>
+			<item>
+				<title>为什么我改了 a，b 也跟着变了？——把 Python 的变量和对象讲清楚</title>
+				<link>https://wsb-666.github.io/my-blog/posts/post1/</link>
+				<pubDate>Thu, 24 Sep 2026 12:00:00 +0800</pubDate>
+				<guid>https://wsb-666.github.io/my-blog/posts/post1/</guid>
+				<description></description>
+			</item>
+			<item>
+				<title>你好，世界：我的第一篇博客</title>
+				<link>https://wsb-666.github.io/my-blog/posts/hello-world/</link>
+				<pubDate>Mon, 14 Sep 2026 20:00:00 +0800</pubDate>
+				<guid>https://wsb-666.github.io/my-blog/posts/hello-world/</guid>
+				<description>&lt;blockquote&gt;&#xA;    &lt;p&gt;这是一篇&lt;strong&gt;示例文章&lt;/strong&gt;，用来演示文章格式。欢迎随时编辑或删除它，然后开始写你自己的内容！&lt;/p&gt;&#xA;&#xA;  &lt;/blockquote&gt;</description>
+			</item>
+	</channel>
+</rss>

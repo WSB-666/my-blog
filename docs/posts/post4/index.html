@@ -1,153 +1,527 @@
-<!DOCTYPE html><html class="scroll-smooth" lang="zh-CN"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><title>机器人的&quot;我在哪&quot;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工 • 翠速小筑</title><link href="/my-blog/icon.svg" rel="icon" type="image/svg+xml"><link rel="icon" href="/my-blog/favicon-32x32.png" type="image/png"><link href="/my-blog/icons/apple-touch-icon.png" rel="apple-touch-icon"><link href="/my-blog/manifest.webmanifest" rel="manifest"><link href="https://wsb-666.github.io/my-blog/posts/post4/" rel="canonical"><meta content="机器人的&quot;我在哪&quot;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工 • 翠速小筑" name="title"><meta content="从贝叶斯滤波这个&quot;祖宗&quot;讲起，把 KF/EKF/UKF 和粒子滤波（AMCL）在假设、信念表示、计算量上的区别一次讲清，再看它们在 robot_localization 和 Nav2 里各自站哪一环。" name="description"><meta content="WSB-666" name="author"><meta content="article" property="og:type"><meta content="机器人的&quot;我在哪&quot;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工" property="og:title"><meta content="从贝叶斯滤波这个&quot;祖宗&quot;讲起，把 KF/EKF/UKF 和粒子滤波（AMCL）在假设、信念表示、计算量上的区别一次讲清，再看它们在 robot_localization 和 Nav2 里各自站哪一环。" property="og:description"><meta content="https://wsb-666.github.io/my-blog/posts/post4/" property="og:url"><meta content="翠速小筑" property="og:site_name"><meta content="zh_CN" property="og:locale"><meta content="https://wsb-666.github.io/my-blog/og-image/post4.png" property="og:image"><meta content="1200" property="og:image:width"><meta content="630" property="og:image:height"><meta content="WSB-666" property="article:author"><meta content="2026-10-24T04:00:00.000Z" property="article:published_time"><meta content="summary_large_image" property="twitter:card"><meta content="https://wsb-666.github.io/my-blog/posts/post4/" property="twitter:url"><meta content="机器人的&quot;我在哪&quot;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工" property="twitter:title"><meta content="从贝叶斯滤波这个&quot;祖宗&quot;讲起，把 KF/EKF/UKF 和粒子滤波（AMCL）在假设、信念表示、计算量上的区别一次讲清，再看它们在 robot_localization 和 Nav2 里各自站哪一环。" property="twitter:description"><meta content="https://wsb-666.github.io/my-blog/og-image/post4.png" property="twitter:image"><link href="/my-blog/sitemap-index.xml" rel="sitemap"><link href="/my-blog/rss.xml" title="Blog" rel="alternate" type="application/rss+xml"><link href="/my-blog/notes/rss.xml" title="Notes" rel="alternate" type="application/rss+xml"><meta content="Astro v7.0.4" name="generator"><script>
-	const lightModePref = window.matchMedia("(prefers-color-scheme: light)");
+<!DOCTYPE html>
+<html lang="zh-Hans"
+  x-data
+  :class="$store.darkMode.isDark() ? 'dark' : 'light'"
+  :data-theme="$store.darkMode.theme()">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机器人的&#34;我在哪&#34;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工 | 翠速小筑</title>
 
-	function getUserPref() {
-		const storedTheme = typeof localStorage !== "undefined" && localStorage.getItem("theme");
-		return storedTheme || (lightModePref.matches ? "light" : "dark");
-	}
+    
+  
+    <link href="/my-blog/favicon.svg" rel="icon" type="image/x-icon" />
+  
 
-	function setTheme(newTheme) {
-		if (newTheme !== "light" && newTheme !== "dark") {
-			return console.warn(
-				`Invalid theme value '${newTheme}' received. Expected 'light' or 'dark'.`,
-			);
-		}
 
-		const root = document.documentElement;
+<link rel="canonical" href="https://wsb-666.github.io/my-blog/posts/post4/" />
 
-		// root already set to newTheme, exit early
-		if (newTheme === root.getAttribute("data-theme")) {
-			return;
-		}
 
-		root.setAttribute("data-theme", newTheme);
 
-		if (typeof localStorage !== "undefined") {
-			localStorage.setItem("theme", newTheme);
-		}
-	}
+<meta name="author" content="WSB-666" />
+<meta name="description" content="从贝叶斯滤波这个&#34;祖宗&#34;讲起，把 KF/EKF/UKF 和粒子滤波（AMCL）在假设、信念表示、计算量上的区别一次讲清，再看它们在 robot_localization 和 Nav2 里各自站哪一环。" />
 
-	// initial setup
-	setTheme(getUserPref());
 
-	// listen for pageshow event, browser restored page from bfcache
-	window.addEventListener("pageshow", (e) => {
-		if (e.persisted) {
-			setTheme(getUserPref());
-		}
-	});
+<meta name="keywords" content="ROS 2,滤波,定位">
 
-	// listen for theme-change custom event, fired in src/components/ThemeToggle.astro
-	document.addEventListener("theme-change", (e) => {
-		setTheme(e.detail.theme);
-	});
 
-	// listen for prefers-color-scheme change.
-	lightModePref.addEventListener("change", (e) => setTheme(e.matches ? "light" : "dark"));
-</script><link rel="stylesheet" href="/my-blog/_astro/Base.C653ucjA.css"></head><body class="bg-global-bg text-global-text mx-auto flex min-h-screen max-w-3xl flex-col px-4 pt-16 font-mono text-sm font-normal antialiased sm:px-8"><a class="sr-only focus:not-sr-only focus:fixed focus:start-1 focus:top-1.5" href="#main">跳到正文</a><header class="group relative mb-28 flex items-center sm:ps-18" id="main-header"><div class="flex sm:flex-col sm:items-start"><a aria-current="false" class="inline-flex items-center sm:relative sm:inline-block sm:grayscale sm:hover:filter-none" href="/my-blog/"><svg aria-hidden="true" class="me-3 h-10 w-6 sm:absolute sm:-inset-s-18 sm:me-0 sm:h-20 sm:w-12" fill="none" focusable="false" viewBox="0 0 272 480" xmlns="http://www.w3.org/2000/svg"><path fill="#cdffb8" d="M181.334 93.333v-40L226.667 80v40zM136.001 53.333 90.667 26.667v426.666L136.001 480zM45.333 220 0 193.334v140L45.333 360z"></path><path fill="#d482ab" d="M90.667 26.667 136.001 0l45.333 26.667-45.333 26.666zM181.334 53.33l45.333-26.72L272 53.33 226.667 80zM136 240l-45.333-26.67v53.34zM0 193.33l45.333-26.72 45.334 26.72L45.333 220zM181.334 93.277 226.667 120l-45.333 26.67z"></path><path fill="#2abc89" d="m136 53.333 45.333-26.666v120L226.667 120V80L272 53.333V160l-90.667 53.333v240L136 480V306.667L45.334 360V220l45.333-26.667v73.334L136 240z"></path></svg><span class="text-accent-2 text-xl font-bold sm:text-2xl">翠速小筑</span></a><nav aria-label="主导航" class="bg-global-bg absolute -inset-x-4 top-12 hidden flex-col divide-y px-2 py-4 group-[.menu-open]:z-50 group-[.menu-open]:flex sm:static sm:z-auto sm:-ms-4 sm:mt-1 sm:flex sm:flex-row sm:divide-x sm:divide-y-0 sm:bg-transparent sm:p-0" id="navigation-menu"><a aria-current="false" class="text-accent px-2 py-4 font-semibold sm:px-4 sm:py-0 sm:underline-offset-2 sm:hover:underline" href="/my-blog/">首页</a><a aria-current="false" class="text-accent px-2 py-4 font-semibold sm:px-4 sm:py-0 sm:underline-offset-2 sm:hover:underline" href="/my-blog/posts/">文章</a><a aria-current="false" class="text-accent px-2 py-4 font-semibold sm:px-4 sm:py-0 sm:underline-offset-2 sm:hover:underline" href="/my-blog/tags/">标签</a><a aria-current="false" class="text-accent px-2 py-4 font-semibold sm:px-4 sm:py-0 sm:underline-offset-2 sm:hover:underline" href="/my-blog/about/">关于</a></nav></div><script type="module" src="/my-blog/_astro/Search.astro_astro_type_script_index_0_lang.C-wTs52_.js"></script><pagefind-config baseUrl="/my-blog/" bundle-path="/my-blog/pagefind/"></pagefind-config><pagefind-modal-trigger id="search" class="ms-auto" hide-shortcut="true" compact="true"></pagefind-modal-trigger><pagefind-modal></pagefind-modal><theme-toggle class="ms-2 sm:ms-4"><button class="hover:text-accent relative h-9 w-9 cursor-pointer p-2" type="button"><span class="sr-only">切换深浅色主题</span><svg aria-hidden="true" class="absolute inset-s-1/2 top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 scale-100 opacity-100 transition-all dark:scale-0 dark:opacity-0" fill="none" focusable="false" id="sun-svg" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M22 12L23 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 2V1" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 23V22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M20 20L19 19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M20 4L19 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M4 20L5 19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M4 4L5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M1 12L2 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path></svg><svg aria-hidden="true" class="absolute inset-s-1/2 top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 scale-0 opacity-0 transition-all dark:scale-100 dark:opacity-100" fill="none" focusable="false" id="moon-svg" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none" stroke="none"></path><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path><path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"></path><path d="M19 11h2m-1 -1v2"></path></svg></button></theme-toggle><script type="module" src="/my-blog/_astro/ThemeToggle.astro_astro_type_script_index_0_lang.BBw6qaf9.js"></script><mobile-button><button aria-expanded="false" aria-haspopup="menu" class="group relative ms-4 h-7 w-7 sm:invisible sm:hidden" id="toggle-navigation-menu" type="button"><span class="sr-only">打开主菜单</span><svg aria-hidden="true" class="absolute start-1/2 top-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 transition-all group-aria-expanded:scale-0 group-aria-expanded:opacity-0" fill="none" focusable="false" id="line-svg" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3.75 9h16.5m-16.5 6.75h16.5" stroke-linecap="round" stroke-linejoin="round"></path></svg><svg aria-hidden="true" class="text-accent absolute start-1/2 top-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-0 opacity-0 transition-all group-aria-expanded:scale-100 group-aria-expanded:opacity-100" fill="none" focusable="false" id="cross-svg" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></mobile-button></header><script type="module" src="/my-blog/_astro/Header.astro_astro_type_script_index_0_lang.BESQ7zQP.js"></script><main id="main"><article class="grow break-words" data-pagefind-body><div id="blog-hero" class="mb-12"><h1 class="title">机器人的&quot;我在哪&quot;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工</h1><div class="flex flex-wrap items-center gap-x-3 gap-y-2"><p class="font-semibold"><time datetime="2026-10-24T04:00:00.000Z" title="2026-10-24T04:00:00.000Z">2026年10月24日</time> / 约 16 分钟读完</p></div><div class="mt-2"><svg aria-hidden="true" class="inline-block h-6 w-6" fill="none" focusable="false" stroke="var(--color-muted)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none" stroke="none"></path><path d="M7.859 6h-2.834a2.025 2.025 0 0 0 -2.025 2.025v2.834c0 .537 .213 1.052 .593 1.432l6.116 6.116a2.025 2.025 0 0 0 2.864 0l2.834 -2.834a2.025 2.025 0 0 0 0 -2.864l-6.117 -6.116a2.025 2.025 0 0 0 -1.431 -.593z"></path><path d="M17.573 18.407l2.834 -2.834a2.025 2.025 0 0 0 0 -2.864l-7.117 -7.116"></path><path d="M6 9h-.01"></path></svg><span class="contents"><a class="cactus-link inline-block before:content-['#']" data-pagefind-filter="tag:ros 2" href="/my-blog/tags/ros 2/"><span class="sr-only">查看标签&nbsp;</span>ros 2</a>, </span><span class="contents"><a class="cactus-link inline-block before:content-['#']" data-pagefind-filter="tag:滤波" href="/my-blog/tags/滤波/"><span class="sr-only">查看标签&nbsp;</span>滤波</a>, </span><span class="contents"><a class="cactus-link inline-block before:content-['#']" data-pagefind-filter="tag:定位" href="/my-blog/tags/定位/"><span class="sr-only">查看标签&nbsp;</span>定位</a></span></div></div><div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between"><details open class="lg:sticky lg:top-12 lg:order-2 lg:-me-32 lg:basis-64"><summary class="title hover:marker:text-accent cursor-pointer text-lg">目录</summary><nav class="ms-4 lg:w-full"><ol class="mt-4"><li class><a class="line-clamp-2 hover:text-accent mt-3" href="#一先分清两种滤波">一、先分清两种“滤波”</a></li><li class><a class="line-clamp-2 hover:text-accent mt-3" href="#二贝叶斯滤波所有状态估计的祖宗">二、贝叶斯滤波：所有状态估计的祖宗</a></li><li class><a class="line-clamp-2 hover:text-accent mt-3" href="#三卡尔曼家族高斯世界的最优解">三、卡尔曼家族：高斯世界的最优解</a><ol><li class="ms-2"><a class="line-clamp-2 hover:text-accent mt-2 text-xs" href="#kf前提是世界是直的噪声是钟形的">KF：前提是“世界是直的、噪声是钟形的”</a></li><li class="ms-2"><a class="line-clamp-2 hover:text-accent mt-2 text-xs" href="#ekf把曲线当成切线">EKF：把曲线当成切线</a></li><li class="ms-2"><a class="line-clamp-2 hover:text-accent mt-2 text-xs" href="#ukf不近似曲线直接在曲线上采样">UKF：不近似曲线，直接在曲线上采样</a></li><li class="ms-2"><a class="line-clamp-2 hover:text-accent mt-2 text-xs" href="#ros2-里的落地robot_localization">ROS2 里的落地：robot_localization</a></li><li class="ms-2"><a class="line-clamp-2 hover:text-accent mt-2 text-xs" href="#家族的死穴只能有一个峰">家族的死穴：只能有一个峰</a></li></ol></li><li class><a class="line-clamp-2 hover:text-accent mt-3" href="#四粒子滤波用一群假想的自己投票">四、粒子滤波：用一群“假想的自己”投票</a><ol><li class="ms-2"><a class="line-clamp-2 hover:text-accent mt-2 text-xs" href="#ros2-里的落地nav2-的-amcl">ROS2 里的落地：Nav2 的 AMCL</a></li><li class="ms-2"><a class="line-clamp-2 hover:text-accent mt-2 text-xs" href="#粒子滤波的死穴维度灾难">粒子滤波的死穴：维度灾难</a></li></ol></li><li class><a class="line-clamp-2 hover:text-accent mt-3" href="#五一张表看懂区别">五、一张表看懂区别</a></li><li class><a class="line-clamp-2 hover:text-accent mt-3" href="#六不上真车也能玩十分钟体验-amcl">六、不上真车也能玩：十分钟体验 AMCL</a></li><li class><a class="line-clamp-2 hover:text-accent mt-3" href="#写在最后">写在最后</a></li></ol></nav></details><div class="prose prose-sm prose-headings:font-semibold prose-headings:text-accent-2 prose-headings:before:absolute prose-headings:before:-ms-4 prose-headings:before:text-muted prose-headings:before:opacity-0 prose-headings:before:transition-opacity prose-headings:hover:before:text-accent prose-headings:hover:before:opacity-100 sm:prose-headings:before:content-['#'] sm:prose-th:before:content-none"><p>上一篇我把一台机器人“造”进了电脑：URDF 是骨架，Gazebo 是皮肉，ros2_control 是神经。造完之后发现一个更尴尬的事——<strong>这台机器人不知道自己在哪</strong>。</p>
-<p>你可能说：轮速里程计不是一直在发 <code>odom → base_link</code> 的 tf 吗？问题是，让小车原地转两圈再回原点，你会发现它“回家”的位置偏了。轮子打滑、地面摩擦不均，这些误差<strong>只进不出</strong>，越积越多。IMU 更别提，便宜 MEMS 陀螺仪的零偏漂移，放一晚上能给你漂出十几度。</p>
-<p>传感器个个都“半信半疑”，那就需要一门手艺：<strong>把多个不靠谱的信息源，融合成一个靠谱的状态估计</strong>。这就是滤波器在机器人里干的活。</p>
+
+<meta name="generator" content="Hugo 0.169.0">
+
+
+<meta property="og:url" content="https://wsb-666.github.io/my-blog/posts/post4/">
+	<meta property="og:site_name" content="翠速小筑">
+	<meta property="og:title" content="机器人的&#34;我在哪&#34;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工">
+	<meta property="og:description" content="从贝叶斯滤波这个&#34;祖宗&#34;讲起，把 KF/EKF/UKF 和粒子滤波（AMCL）在假设、信念表示、计算量上的区别一次讲清，再看它们在 robot_localization 和 Nav2 里各自站哪一环。">
+	<meta property="og:locale" content="zh_Hans">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="posts">
+		<meta property="article:published_time" content="2026-10-24T12:00:00+08:00">
+		<meta property="article:modified_time" content="2026-10-24T12:00:00+08:00">
+		<meta property="article:tag" content="ROS 2">
+		<meta property="article:tag" content="滤波">
+		<meta property="article:tag" content="定位">
+
+
+
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="机器人的&#34;我在哪&#34;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工">
+	<meta name="twitter:description" content="从贝叶斯滤波这个&#34;祖宗&#34;讲起，把 KF/EKF/UKF 和粒子滤波（AMCL）在假设、信念表示、计算量上的区别一次讲清，再看它们在 robot_localization 和 Nav2 里各自站哪一环。">
+
+
+
+
+  
+
+<link rel="stylesheet" href="/my-blog/css/output.min.css" />
+
+
+<style>
+
+#dream-global-bg {
+  background-image: url(/my-blog/img/background-fresh.jpg);
+}
+
+
+
+</style>
+
+
+
+    
+
+
+<style>
+  pre {
+    padding: 1em;
+    overflow: auto;
+  }
+</style>
+
+
+
+
+
+
+
+
+
+    
+    <link rel="stylesheet" href="/my-blog/css/custom.css" />
+    
+
+    <script>
+      window.lightTheme = 'emerald'
+      window.darkTheme = 'forest'
+
+      ;(function() {
+        const isDark = ('hugo-theme-dream-is-dark' in localStorage)
+          ? window.localStorage.getItem('hugo-theme-dream-is-dark') === 'y'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches
+        const theme = isDark ? window.darkTheme : window.lightTheme
+
+        document.documentElement.setAttribute('data-theme', theme)
+      })()
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js" integrity="sha256-V7N9fK6aJ9ll/a5K3MhEJF39xAfmVa7oXc//OggDaj8=" crossorigin="anonymous"></script>
+  </head>
+
+  <body x-data="{
+    flip: false,
+  }">
+    
+      <div id="dream-global-bg"></div>
+    
+
+    
+<nav x-data="{ isSticky: false }"
+  x-init="window.addEventListener('scroll', () => { isSticky = window.scrollY > 30 })"
+  class="sticky top-0 z-30 mt-4 lg:mt-8 py-4"
+  :class="{ 'bg-base-100 shadow-lg dark:border-b dark:border-base-content/30': isSticky }">
+
+  
+  <div class="container flex justify-between px-4">
+  
+    <section class="flex items-center gap-2">
+      <div class="avatar cursor-pointer hover:avatar-online" @click="flip = !flip" title="翻转一下！">
+        <div class="w-12 h-12 rounded-full select-none">
+          <img src="/my-blog/" alt="翠速小筑" />
+        </div>
+      </div>
+
+      
+      <div>
+        
+        <a href="https://wsb-666.github.io/my-blog/" class="text-lg font-semibold cursor-pointer">
+          翠速小筑
+        </a>
+        
+        
+        <div class="text-base-content/60 text-sm">把每一次踩坑，都留成路标。</div>
+        
+      </div>
+      
+    </section>
+
+    
+    
+
+    <div class="dropdown dropdown-end sm:hidden">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-square" aria-label="Select an option">
+        <ion-icon name="menu" class="text-2xl"></ion-icon>
+      </div>
+      <ul tabindex="0" class="dropdown-content menu w-36 bg-base-100 rounded-box z-10 shadow-md">
+        
+
+
+
+
+
+
+
+<li>
+  <div role="link" tabindex="0" class="inline-flex items-center p-2 cursor-pointer" @click="flip = !flip" title="关于">
+    <ion-icon name="information-circle"></ion-icon>关于</div>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+  <a class="inline-flex items-center p-2 cursor-pointer" href="/my-blog/index.xml" title="RSS">
+    <ion-icon name="logo-rss"></ion-icon>
+    RSS
+  </a>
+</li>
+
+
+
+
+<li>
+  <a class="inline-flex items-center p-2 cursor-pointer" href="/my-blog/posts" title="归档">
+    <ion-icon name="archive"></ion-icon>
+    归档
+  </a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+  <a class="inline-flex items-center p-2 cursor-pointer" href="/my-blog/tags" title="所有标签">
+    <ion-icon name="pricetags"></ion-icon>
+    所有标签
+  </a>
+</li>
+
+
+
+
+
+
+      </ul>
+    </div>
+    <section class="hidden sm:flex sm:items-center sm:gap-2 md:gap-4">
+      
+
+      
+      
+
+
+
+
+<div role="link" tabindex="0" class="text-sm font-semibold cursor-pointer hover:underline" @click="flip = !flip" title="关于">关于</div>
+
+
+
+
+
+      
+      
+
+
+
+
+
+
+
+      
+      
+<a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="/my-blog/index.xml" title="RSS">
+  <ion-icon class="group-hover:text-primary-content" name="logo-rss"></ion-icon>
+</a>
+
+
+      
+      
+<a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="/my-blog/posts" title="归档">
+  <ion-icon class="group-hover:text-primary-content" name="archive"></ion-icon>
+</a>
+
+
+      
+      
+
+
+
+
+
+
+
+      
+      
+<a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary" href="/my-blog/tags" title="所有标签">
+  <ion-icon class="group-hover:text-primary-content" name="pricetags"></ion-icon>
+</a>
+
+
+      
+
+      
+
+      
+    </section>
+  </div>
+</nav>
+
+
+    <div class="flip-container" :class="{ 'flip-it': flip }">
+      <div class="flipper">
+        <div class="front">
+          <div class="container">
+            
+<div class="lg:grid lg:grid-cols-4 gap-4 mt-4 px-4">
+  <div class="hidden lg:block">
+    
+  </div>
+
+  <div class="lg:col-span-2">
+    <article class="mx-auto prose prose-quoteless dark:prose-invert" id="dream-single-post-main" itemscope itemtype="http://schema.org/Article">
+      
+	<meta itemprop="name" content="机器人的&#34;我在哪&#34;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工">
+	<meta itemprop="description" content="从贝叶斯滤波这个&#34;祖宗&#34;讲起，把 KF/EKF/UKF 和粒子滤波（AMCL）在假设、信念表示、计算量上的区别一次讲清，再看它们在 robot_localization 和 Nav2 里各自站哪一环。">
+	<meta itemprop="datePublished" content="2026-10-24T12:00:00+08:00">
+	<meta itemprop="dateModified" content="2026-10-24T12:00:00+08:00">
+	<meta itemprop="wordCount" content="4030">
+	<meta itemprop="keywords" content="ROS 2,滤波,定位">
+
+      <header>
+        <h1 itemprop="headline">机器人的&#34;我在哪&#34;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工</h1>
+        <p class="text-sm">
+          
+            <span data-format="luxon">2026-10-24T12:00:00&#43;08:00</span>
+          
+
+          | <span>9分钟阅读</span>
+
+          
+            | <span>更新于
+              
+                <span data-format="luxon">2026-10-24T12:00:00&#43;08:00</span>
+              
+            </span>
+          
+        </p>
+
+        
+        <div class="flex justify-between">
+          
+            <div class="flex items-center">
+  
+  <span>@</span>
+  
+
+  <span itemprop="author" itemscope itemtype="https://schema.org/Person">
+  
+    <span itemprop="name">WSB-666</span>
+  
+  </span>
+</div>
+
+          
+
+          <div class="flex items-center gap-2">
+  
+  
+
+  
+  
+  
+  
+  
+    <a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary"
+      href="https://x.com/intent/post?text=%e6%9c%ba%e5%99%a8%e4%ba%ba%e7%9a%84%22%e6%88%91%e5%9c%a8%e5%93%aa%22%e9%9a%be%e9%a2%98%ef%bc%9a%e7%b2%92%e5%ad%90%e6%bb%a4%e6%b3%a2%e5%92%8c%e5%8d%a1%e5%b0%94%e6%9b%bc%e6%bb%a4%e6%b3%a2%e5%9c%a8%20ROS2%20%e9%87%8c%e7%9a%84%e5%88%86%e5%b7%a5&amp;url=https://wsb-666.github.io/my-blog/posts/post4/" target="_blank" rel="noopener noreferrer"
+      title="Share on X">
+      <ion-icon class="group-hover:text-primary-content" name="logo-x"></ion-icon>
+    </a>
+  
+    <a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary"
+      href="https://facebook.com/sharer/sharer.php?u=https://wsb-666.github.io/my-blog/posts/post4/" target="_blank" rel="noopener noreferrer"
+      title="Share on Facebook">
+      <ion-icon class="group-hover:text-primary-content" name="logo-facebook"></ion-icon>
+    </a>
+  
+    <a class="group inline-flex items-center p-2 rounded-full cursor-pointer hover:bg-primary"
+      href="https://wa.me/?text=%e6%9c%ba%e5%99%a8%e4%ba%ba%e7%9a%84%22%e6%88%91%e5%9c%a8%e5%93%aa%22%e9%9a%be%e9%a2%98%ef%bc%9a%e7%b2%92%e5%ad%90%e6%bb%a4%e6%b3%a2%e5%92%8c%e5%8d%a1%e5%b0%94%e6%9b%bc%e6%bb%a4%e6%b3%a2%e5%9c%a8%20ROS2%20%e9%87%8c%e7%9a%84%e5%88%86%e5%b7%a5%20https://wsb-666.github.io/my-blog/posts/post4/" target="_blank" rel="noopener noreferrer"
+      title="Share on WhatsApp">
+      <ion-icon class="group-hover:text-primary-content" name="logo-whatsapp"></ion-icon>
+    </a>
+  
+
+  
+  
+</div>
+
+        </div>
+      </header>
+
+      <section id="dream-single-post-content" itemprop="articleBody">
+        
+          <figure>
+            <img class="z-30" src="/my-blog/img/covers/post4-particle-filter.jpg" alt="机器人的&#34;我在哪&#34;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工" />
+            
+          </figure>
+        
+
+        <p>上一篇我把一台机器人&quot;造&quot;进了电脑：URDF 是骨架，Gazebo 是皮肉，ros2_control 是神经。造完之后发现一个更尴尬的事——<strong>这台机器人不知道自己在哪</strong>。</p>
+<p>你可能说：轮速里程计不是一直在发 <code>odom → base_link</code> 的 tf 吗？问题是，让小车原地转两圈再回原点，你会发现它&quot;回家&quot;的位置偏了。轮子打滑、地面摩擦不均，这些误差<strong>只进不出</strong>，越积越多。IMU 更别提，便宜 MEMS 陀螺仪的零偏漂移，放一晚上能给你漂出十几度。</p>
+<p>传感器个个都&quot;半信半疑&quot;，那就需要一门手艺：<strong>把多个不靠谱的信息源，融合成一个靠谱的状态估计</strong>。这就是滤波器在机器人里干的活。</p>
 <p>这篇把 ROS2 里最常打交道的几类滤波器捋一遍：它们分属哪个门派、假设是什么、在软件栈里各自站在哪一环。</p>
-<h2 id="一先分清两种滤波"><a href="#一先分清两种滤波" class="not-prose">一、先分清两种“滤波”</a></h2>
-<p>第一次搜资料的时候我直接被“滤波”这个词搞晕了：低通滤波、卡尔曼滤波、粒子滤波、互补滤波……看起来都是滤波，其实根本不是一个层面的东西。</p>
-<p><strong>第一类：信号滤波</strong>。处理的是一维原始信号——ADC 采回来的电压、超声波测的距离、陀螺仪的角速度。目的是去毛刺、抑噪声，让曲线“好看”。滑动平均、中值滤波、低通滤波都属于这类，几十行代码就能手写一个，ROS2 里通常直接在驱动节点里做掉。</p>
-<p><strong>第二类：状态估计</strong>。处理的是机器人的<strong>状态</strong>——位姿、速度这种多维、互相耦合的量。它回答的不是“这个读数噪声有点大怎么抹平”，而是“综合所有传感器的证据，机器人现在最可能在哪、以多快的速度朝哪个方向动”。卡尔曼家族和粒子滤波都是这一类。</p>
-<p>一句话：<strong>信号滤波让曲线好看，状态估计回答“我在哪”</strong>。这篇文章讲的都是第二类。中间还有个夹在两类的互补滤波（Madgwick/Mahony，<code>imu_filter_madgwick</code> 包），用陀螺仪积分加速度计修正，专攻姿态角，算是状态估计里的轻量选手，后面还会提到它。</p>
-<h2 id="二贝叶斯滤波所有状态估计的祖宗"><a href="#二贝叶斯滤波所有状态估计的祖宗" class="not-prose">二、贝叶斯滤波：所有状态估计的祖宗</a></h2>
+<h2 id="一先分清两种滤波">一、先分清两种&quot;滤波&quot;</h2>
+<p>第一次搜资料的时候我直接被&quot;滤波&quot;这个词搞晕了：低通滤波、卡尔曼滤波、粒子滤波、互补滤波……看起来都是滤波，其实根本不是一个层面的东西。</p>
+<p><strong>第一类：信号滤波</strong>。处理的是一维原始信号——ADC 采回来的电压、超声波测的距离、陀螺仪的角速度。目的是去毛刺、抑噪声，让曲线&quot;好看&quot;。滑动平均、中值滤波、低通滤波都属于这类，几十行代码就能手写一个，ROS2 里通常直接在驱动节点里做掉。</p>
+<p><strong>第二类：状态估计</strong>。处理的是机器人的<strong>状态</strong>——位姿、速度这种多维、互相耦合的量。它回答的不是&quot;这个读数噪声有点大怎么抹平&quot;，而是&quot;综合所有传感器的证据，机器人现在最可能在哪、以多快的速度朝哪个方向动&quot;。卡尔曼家族和粒子滤波都是这一类。</p>
+<p>一句话：<strong>信号滤波让曲线好看，状态估计回答&quot;我在哪&quot;</strong>。这篇文章讲的都是第二类。中间还有个夹在两类的互补滤波（Madgwick/Mahony，<code>imu_filter_madgwick</code> 包），用陀螺仪积分加速度计修正，专攻姿态角，算是状态估计里的轻量选手，后面还会提到它。</p>
+<h2 id="二贝叶斯滤波所有状态估计的祖宗">二、贝叶斯滤波：所有状态估计的祖宗</h2>
 <p>把 KF、EKF、UKF、PF 拆开看，里面全是同一个循环——<strong>贝叶斯滤波</strong>：</p>
-<div class="expressive-code"><link rel="stylesheet" href="/my-blog/_astro/ec.a8zzi.css"><script type="module" src="/my-blog/_astro/ec.0vx5m.js"></script><figure class="frame"><figcaption class="header"></figcaption><pre data-language="text"><code><div class="ec-line"><div class="code"><span style="--0:#f8f8f2;--1:#24292e">循环：</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">  </span></span><span style="--0:#f8f8f2;--1:#24292e">1. 预测（predict）：用运动模型把"信念"往前推一步</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">     </span></span><span style="--0:#f8f8f2;--1:#24292e">—— 我觉得我从 x1 出发，按控制量 u 走，现在应该到 x2</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">     </span></span><span style="--0:#f8f8f2;--1:#24292e">—— 但运动模型有误差，所以推完之后，信念变得更"胖"（不确定性变大）</span></div></div><div class="ec-line"><div class="code">
-</div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">  </span></span><span style="--0:#f8f8f2;--1:#24292e">2. 修正（update）：用传感器观测把信念往回拉</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">     </span></span><span style="--0:#f8f8f2;--1:#24292e">—— 雷达说前方 1.2m 有墙，和我信念里预测的位置一比，对得上/对不上</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">     </span></span><span style="--0:#f8f8f2;--1:#24292e">—— 对得上的信念加强，对不上的削弱（不确定性变小）</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="循环：  1. 预测（predict）：用运动模型把&quot;信念&quot;往前推一步     —— 我觉得我从 x1 出发，按控制量 u 走，现在应该到 x2     —— 但运动模型有误差，所以推完之后，信念变得更&quot;胖&quot;（不确定性变大）  2. 修正（update）：用传感器观测把信念往回拉     —— 雷达说前方 1.2m 有墙，和我信念里预测的位置一比，对得上/对不上     —— 对得上的信念加强，对不上的削弱（不确定性变小）"><div></div></button></div></figure></div>
-<p>所有状态估计器，区别只在一个问题：<strong>“信念”用什么形状来表示？</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>循环：
+</span></span><span style="display:flex;"><span>  1. 预测（predict）：用运动模型把&#34;信念&#34;往前推一步
+</span></span><span style="display:flex;"><span>     —— 我觉得我从 x1 出发，按控制量 u 走，现在应该到 x2
+</span></span><span style="display:flex;"><span>     —— 但运动模型有误差，所以推完之后，信念变得更&#34;胖&#34;（不确定性变大）
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  2. 修正（update）：用传感器观测把信念往回拉
+</span></span><span style="display:flex;"><span>     —— 雷达说前方 1.2m 有墙，和我信念里预测的位置一比，对得上/对不上
+</span></span><span style="display:flex;"><span>     —— 对得上的信念加强，对不上的削弱（不确定性变小）
+</span></span></code></pre></div><p>所有状态估计器，区别只在一个问题：<strong>&ldquo;信念&quot;用什么形状来表示？</strong></p>
 <ul>
 <li>用一个高斯分布（均值 + 协方差）表示 → 卡尔曼家族</li>
 <li>用一堆带权重的样本点表示 → 粒子滤波</li>
 </ul>
 <p>这一个选择，决定了后面的所有差别。</p>
-<h2 id="三卡尔曼家族高斯世界的最优解"><a href="#三卡尔曼家族高斯世界的最优解" class="not-prose">三、卡尔曼家族：高斯世界的最优解</a></h2>
-<h3 id="kf前提是世界是直的噪声是钟形的"><a href="#kf前提是世界是直的噪声是钟形的" class="not-prose">KF：前提是“世界是直的、噪声是钟形的”</a></h3>
+<h2 id="三卡尔曼家族高斯世界的最优解">三、卡尔曼家族：高斯世界的最优解</h2>
+<h3 id="kf前提是世界是直的噪声是钟形的">KF：前提是&quot;世界是直的、噪声是钟形的&rdquo;</h3>
 <p>标准卡尔曼滤波的假设非常苛刻：<strong>系统是线性的，噪声是高斯的</strong>。满足这两个条件时，它是数学意义上的最优估计，而且公式出奇地简单——预测一步、修正一步，全程只需要维护一个均值向量和协方差矩阵，快得飞起。</p>
 <p>但现实里机器人全是非线性：轮式里程计的 x, y, θ 是三角函数关系，IMU 也是。于是有了两个补丁。</p>
-<h3 id="ekf把曲线当成切线"><a href="#ekf把曲线当成切线" class="not-prose">EKF：把曲线当成切线</a></h3>
+<h3 id="ekf把曲线当成切线">EKF：把曲线当成切线</h3>
 <p>扩展卡尔曼滤波（EKF）的思路：在工作点附近做泰勒展开，用<strong>切线近似曲线</strong>。只要非线性不太狠、步长不太大，效果不错。它至今是工程界最常用的状态估计器——没别的，简单、够用、好调。</p>
-<h3 id="ukf不近似曲线直接在曲线上采样"><a href="#ukf不近似曲线直接在曲线上采样" class="not-prose">UKF：不近似曲线，直接在曲线上采样</a></h3>
+<h3 id="ukf不近似曲线直接在曲线上采样">UKF：不近似曲线，直接在曲线上采样</h3>
 <p>无迹卡尔曼滤波（UKF）换了个思路：在均值附近精心挑 2n+1 个 sigma 点，让它们<strong>完整地过一遍非线性方程</strong>，然后对结果统计出新的均值和协方差。不用算雅可比矩阵，对强非线性系统的近似精度比 EKF 好。代价是计算量稍大。</p>
-<h3 id="ros2-里的落地robot_localization"><a href="#ros2-里的落地robot_localization" class="not-prose">ROS2 里的落地：robot_localization</a></h3>
+<h3 id="ros2-里的落地robot_localization">ROS2 里的落地：robot_localization</h3>
 <p>卡尔曼家族在 ROS2 里的门面是 <code>robot_localization</code> 包，提供 <code>ekf_node</code> 和 <code>ukf_node</code> 两个节点。最经典的用法是融合**轮速里程计（连续、平滑、但漂移）**和 <strong>IMU（姿态快、不漂移但噪声大）</strong>：</p>
-<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="yaml"><code><div class="ec-line"><div class="code"><span style="--0:#8BE9FD;--1:#1E7734">ekf_filter_node</span><span style="--0:#FF79C6;--1:#24292E">:</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#8BE9FD;--1:#1E7734">ros__parameters</span><span style="--0:#FF79C6;--1:#24292E">:</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">frequency</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--0:#BD93F9;--1:#005CC5">30.0</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">two_d_mode</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--0:#BD93F9;--1:#005CC5">true</span><span style="--0:#F8F8F2;--1:#24292E">          </span><span style="--0:#96A1C2;--1:#616972"># 平面机器人，把 z/roll/pitch 钉死为 0</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">odom0</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--0:#F1FA8C;--1:#032F62">/odom_raw</span><span style="--0:#F8F8F2;--1:#24292E">          </span><span style="--0:#96A1C2;--1:#616972"># 轮速里程计</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#96A1C2;--1:#616972"># 15 位开关：[x,y,z, roll,pitch,yaw, vx,vy,vz, vr,vp,vy, ax,ay,az]</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">odom0_config</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> [</span></span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">,</span></div></div><div class="ec-line"><div class="code"><span class="indent">                   </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">,</span></div></div><div class="ec-line"><div class="code"><span class="indent">                   </span><span style="--0:#BD93F9;--1:#005CC5">true</span><span style="--0:#F8F8F2;--1:#24292E">,  </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">,   </span><span style="--0:#96A1C2;--1:#616972"># 只信它的 vx</span></div></div><div class="ec-line"><div class="code"><span class="indent">                   </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">true</span><span style="--0:#F8F8F2;--1:#24292E">,    </span><span style="--0:#96A1C2;--1:#616972"># 和 vyaw</span></div></div><div class="ec-line"><div class="code"><span class="indent">                   </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">]</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">imu0</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--0:#F1FA8C;--1:#032F62">/imu/data</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">imu0_config</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> [</span></span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">,</span></div></div><div class="ec-line"><div class="code"><span class="indent">                  </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">,</span></div></div><div class="ec-line"><div class="code"><span class="indent">                  </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">,</span></div></div><div class="ec-line"><div class="code"><span class="indent">                  </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">, </span><span style="--0:#BD93F9;--1:#005CC5">true</span><span style="--0:#F8F8F2;--1:#24292E">,     </span><span style="--0:#96A1C2;--1:#616972"># 角速度 vyaw</span></div></div><div class="ec-line"><div class="code"><span class="indent">                  </span><span style="--0:#BD93F9;--1:#005CC5">true</span><span style="--0:#F8F8F2;--1:#24292E">,  </span><span style="--0:#BD93F9;--1:#005CC5">true</span><span style="--0:#F8F8F2;--1:#24292E">,  </span><span style="--0:#BD93F9;--1:#005CC5">false</span><span style="--0:#F8F8F2;--1:#24292E">]    </span><span style="--0:#96A1C2;--1:#616972"># 加速度 ax, ay</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="ekf_filter_node:  ros__parameters:    frequency: 30.0    two_d_mode: true          # 平面机器人，把 z/roll/pitch 钉死为 0    odom0: /odom_raw          # 轮速里程计    # 15 位开关：[x,y,z, roll,pitch,yaw, vx,vy,vz, vr,vp,vy, ax,ay,az]    odom0_config: [false, false, false,                   false, false, false,                   true,  false, false,   # 只信它的 vx                   false, false, true,    # 和 vyaw                   false, false, false]    imu0: /imu/data    imu0_config: [false, false, false,                  false, false, false,                  false, false, false,                  false, false, true,     # 角速度 vyaw                  true,  true,  false]    # 加速度 ax, ay"><div></div></button></div></figure></div>
-<p>注意 <code>odom0_config</code> 这种 15 位开关的设计——<strong>每个传感器只填自己信得过的分量</strong>，位姿交给别的源，这就是融合的精髓：不是把所有数据都塞进去，而是让每个传感器只贡献它擅长的维度。</p>
-<p>输出的结果是一段平滑的 <code>odom → base_link</code> tf，正好接上你之前学的 TF 链条（就是那篇“杯子为什么不能直接说在这里”的续集）。</p>
-<h3 id="家族的死穴只能有一个峰"><a href="#家族的死穴只能有一个峰" class="not-prose">家族的死穴：只能有一个峰</a></h3>
-<p>高斯分布天生<strong>单峰</strong>。想象你从电梯出来，可能是 1 楼也可能是 2 楼，两个走廊长得一模一样。高斯信念会硬把两个可能<strong>平均成 1.5 楼</strong>——一个精确但完全错误的位置。这在定位里比“粗糙但正确”致命得多。</p>
-<h2 id="四粒子滤波用一群假想的自己投票"><a href="#四粒子滤波用一群假想的自己投票" class="not-prose">四、粒子滤波：用一群“假想的自己”投票</a></h2>
-<p>既然分布形状可能任意，那干脆<strong>不猜形状</strong>——直接撒一把粒子，每个粒子代表一个“假想的自己”（一份完整的位姿假设），带一个权重。</p>
-<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="text"><code><div class="ec-line"><div class="code"><span style="--0:#f8f8f2;--1:#24292e">蒙特卡洛定位（MCL）循环：</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">  </span></span><span style="--0:#f8f8f2;--1:#24292e">1. 撒粒子：在地图上撒 N 个可能的位姿（全局定位就是全图乱撒）</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">  </span></span><span style="--0:#f8f8f2;--1:#24292e">2. 推粒子：每个粒子按运动模型 + 控制量往前走一步，加上噪声</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">  </span></span><span style="--0:#f8f8f2;--1:#24292e">3. 打分：用传感器观测给每个粒子打分——激光束和地图吻合度越高，权重越大</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">  </span></span><span style="--0:#f8f8f2;--1:#24292e">4. 重采样：按权重淘汰，像的留下多生几个，不像的出局</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#f8f8f2;--1:#24292e">  </span></span><span style="--0:#f8f8f2;--1:#24292e">循环几轮后，粒子云会收缩到真实位置附近</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="蒙特卡洛定位（MCL）循环：  1. 撒粒子：在地图上撒 N 个可能的位姿（全局定位就是全图乱撒）  2. 推粒子：每个粒子按运动模型 + 控制量往前走一步，加上噪声  3. 打分：用传感器观测给每个粒子打分——激光束和地图吻合度越高，权重越大  4. 重采样：按权重淘汰，像的留下多生几个，不像的出局  循环几轮后，粒子云会收缩到真实位置附近"><div></div></button></div></figure></div>
-<p>电梯那个场景它毫不含糊：一半粒子在 1 楼，一半在 2 楼，两个峰各过各的。直到你推门看见红色消防栓，2 楼粒子的权重瞬间暴涨，重采样后 1 楼粒子全军覆没——<strong>自然收敛，不需要任何“单峰”假设</strong>。非线性、非高斯、多模态，全都不怕。</p>
-<h3 id="ros2-里的落地nav2-的-amcl"><a href="#ros2-里的落地nav2-的-amcl" class="not-prose">ROS2 里的落地：Nav2 的 AMCL</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">ekf_filter_node</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ros__parameters</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">frequency</span>: <span style="color:#ae81ff">30.0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">two_d_mode</span>: <span style="color:#66d9ef">true</span>          <span style="color:#75715e"># 平面机器人，把 z/roll/pitch 钉死为 0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">odom0</span>: <span style="color:#ae81ff">/odom_raw         </span> <span style="color:#75715e"># 轮速里程计</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># 15 位开关：[x,y,z, roll,pitch,yaw, vx,vy,vz, vr,vp,vy, ax,ay,az]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">odom0_config</span>: [<span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>,
+</span></span><span style="display:flex;"><span>                   <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>,
+</span></span><span style="display:flex;"><span>                   <span style="color:#66d9ef">true</span>,  <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>,   <span style="color:#75715e"># 只信它的 vx</span>
+</span></span><span style="display:flex;"><span>                   <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">true</span>,    <span style="color:#75715e"># 和 vyaw</span>
+</span></span><span style="display:flex;"><span>                   <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">imu0</span>: <span style="color:#ae81ff">/imu/data</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">imu0_config</span>: [<span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>,
+</span></span><span style="display:flex;"><span>                  <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>,
+</span></span><span style="display:flex;"><span>                  <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>,
+</span></span><span style="display:flex;"><span>                  <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">false</span>, <span style="color:#66d9ef">true</span>,     <span style="color:#75715e"># 角速度 vyaw</span>
+</span></span><span style="display:flex;"><span>                  <span style="color:#66d9ef">true</span>,  <span style="color:#66d9ef">true</span>,  <span style="color:#66d9ef">false</span>]    <span style="color:#75715e"># 加速度 ax, ay</span>
+</span></span></code></pre></div><p>注意 <code>odom0_config</code> 这种 15 位开关的设计——<strong>每个传感器只填自己信得过的分量</strong>，位姿交给别的源，这就是融合的精髓：不是把所有数据都塞进去，而是让每个传感器只贡献它擅长的维度。</p>
+<p>输出的结果是一段平滑的 <code>odom → base_link</code> tf，正好接上你之前学的 TF 链条（就是那篇&quot;杯子为什么不能直接说在这里&quot;的续集）。</p>
+<h3 id="家族的死穴只能有一个峰">家族的死穴：只能有一个峰</h3>
+<p>高斯分布天生<strong>单峰</strong>。想象你从电梯出来，可能是 1 楼也可能是 2 楼，两个走廊长得一模一样。高斯信念会硬把两个可能<strong>平均成 1.5 楼</strong>——一个精确但完全错误的位置。这在定位里比&quot;粗糙但正确&quot;致命得多。</p>
+<h2 id="四粒子滤波用一群假想的自己投票">四、粒子滤波：用一群&quot;假想的自己&quot;投票</h2>
+<p>既然分布形状可能任意，那干脆<strong>不猜形状</strong>——直接撒一把粒子，每个粒子代表一个&quot;假想的自己&quot;（一份完整的位姿假设），带一个权重。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>蒙特卡洛定位（MCL）循环：
+</span></span><span style="display:flex;"><span>  1. 撒粒子：在地图上撒 N 个可能的位姿（全局定位就是全图乱撒）
+</span></span><span style="display:flex;"><span>  2. 推粒子：每个粒子按运动模型 + 控制量往前走一步，加上噪声
+</span></span><span style="display:flex;"><span>  3. 打分：用传感器观测给每个粒子打分——激光束和地图吻合度越高，权重越大
+</span></span><span style="display:flex;"><span>  4. 重采样：按权重淘汰，像的留下多生几个，不像的出局
+</span></span><span style="display:flex;"><span>  循环几轮后，粒子云会收缩到真实位置附近
+</span></span></code></pre></div><p>电梯那个场景它毫不含糊：一半粒子在 1 楼，一半在 2 楼，两个峰各过各的。直到你推门看见红色消防栓，2 楼粒子的权重瞬间暴涨，重采样后 1 楼粒子全军覆没——<strong>自然收敛，不需要任何&quot;单峰&quot;假设</strong>。非线性、非高斯、多模态，全都不怕。</p>
+<h3 id="ros2-里的落地nav2-的-amcl">ROS2 里的落地：Nav2 的 AMCL</h3>
 <p>粒子滤波在 ROS2 里的代表是 Nav2 的 <code>amcl</code>（自适应蒙特卡洛定位）。它的分工非常明确：<strong>在已有地图上，用激光雷达做定位</strong>。</p>
-<p>还记得 TF 文章里 <code>map → odom → base_link</code> 那条链吗？<code>odom → base_link</code> 是轮速里程计在发，而 <strong><code>map → odom</code> 这一段就是 AMCL 发的</strong>——它负责修正里程计的累积漂移：“里程计说你在 (3.2, 1.5)，但对着地图一看，你其实站在 (3.0, 1.6)，差的那截我补上”。这正是 REP-105 的设计：全局修正和局部推算各管一段，互不干扰。</p>
+<p>还记得 TF 文章里 <code>map → odom → base_link</code> 那条链吗？<code>odom → base_link</code> 是轮速里程计在发，而 <strong><code>map → odom</code> 这一段就是 AMCL 发的</strong>——它负责修正里程计的累积漂移：&ldquo;里程计说你在 (3.2, 1.5)，但对着地图一看，你其实站在 (3.0, 1.6)，差的那截我补上&rdquo;。这正是 REP-105 的设计：全局修正和局部推算各管一段，互不干扰。</p>
 <p>几个值得玩味的参数：</p>
-<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="yaml"><code><div class="ec-line"><div class="code"><span style="--0:#8BE9FD;--1:#1E7734">amcl</span><span style="--0:#FF79C6;--1:#24292E">:</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#8BE9FD;--1:#1E7734">ros__parameters</span><span style="--0:#FF79C6;--1:#24292E">:</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">min_particles</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--0:#BD93F9;--1:#005CC5">500</span><span style="--0:#F8F8F2;--1:#24292E">        </span><span style="--0:#96A1C2;--1:#616972"># 粒子下限：少了快但容易飘</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">max_particles</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--0:#BD93F9;--1:#005CC5">2000</span><span style="--0:#F8F8F2;--1:#24292E">       </span><span style="--0:#96A1C2;--1:#616972"># 粒子上限：多了准但吃 CPU</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">pf_type</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--1:#032F62"><span style="--0:#E9F284">"</span><span style="--0:#F1FA8C">adaptive_kld</span><span style="--0:#E9F284">"</span></span><span style="--0:#F8F8F2;--1:#24292E">   </span><span style="--0:#96A1C2;--1:#616972"># KLD 自适应：不确定时自动多撒，收敛后自动减员</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">laser_model_type</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--1:#032F62"><span style="--0:#E9F284">"</span><span style="--0:#F1FA8C">likelihood_field</span><span style="--0:#E9F284">"</span></span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#8BE9FD;--1:#1E7734">set_initial_pose</span><span style="--1:#24292E"><span style="--0:#FF79C6">:</span><span style="--0:#F8F8F2"> </span></span><span style="--0:#BD93F9;--1:#005CC5">true</span><span style="--0:#F8F8F2;--1:#24292E">    </span><span style="--0:#96A1C2;--1:#616972"># 或者每次用 rviz 的 2D Pose Estimate 手动给</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="amcl:  ros__parameters:    min_particles: 500        # 粒子下限：少了快但容易飘    max_particles: 2000       # 粒子上限：多了准但吃 CPU    pf_type: &quot;adaptive_kld&quot;   # KLD 自适应：不确定时自动多撒，收敛后自动减员    laser_model_type: &quot;likelihood_field&quot;    set_initial_pose: true    # 或者每次用 rviz 的 2D Pose Estimate 手动给"><div></div></button></div></figure></div>
-<p><code>adaptive_kld</code> 值得单独说一句：粒子撒多了浪费算力，撒少了估计不稳，KLD 采样用信息论的方法动态控制粒子数——刚开局全图乱撒时多用粒子，锁定目标后自动减员。这就是名字里“自适应”的含义。</p>
-<p>调试时最爽的直观体验：rviz2 里加一个 <strong>PoseArray</strong> 显示，订阅 <code>/particle_cloud</code>（或 amcl 的粒子话题），你能亲眼看到一团红色的“假想机器人”从漫天散布一步步收缩到一个点——粒子滤波的教科书动图，在自己屏幕上跑出来。</p>
-<p>被“绑架”了（机器人被搬走）怎么办？调 <code>reinitialize_global_localization</code> 服务，粒子重新全图乱撒，从头再来。</p>
-<h3 id="粒子滤波的死穴维度灾难"><a href="#粒子滤波的死穴维度灾难" class="not-prose">粒子滤波的死穴：维度灾难</a></h3>
-<p>粒子数量随状态维度<strong>指数增长</strong>。定位的状态就三维（x, y, θ），几百到几千个粒子足够；但 SLAM 的状态包含整张地图——几千维，粒子滤波直接爆炸。历史上 FastSLAM 用“每个粒子带一张小地图”的技巧绕过，但现代主流 SLAM（如 <code>slam_toolbox</code>）已经走了另一条路：图优化。所以粒子滤波的地盘很清晰：<strong>低维状态的估计，典型就是定位</strong>。</p>
-<h2 id="五一张表看懂区别"><a href="#五一张表看懂区别" class="not-prose">五、一张表看懂区别</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">amcl</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ros__parameters</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">min_particles</span>: <span style="color:#ae81ff">500</span>        <span style="color:#75715e"># 粒子下限：少了快但容易飘</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">max_particles</span>: <span style="color:#ae81ff">2000</span>       <span style="color:#75715e"># 粒子上限：多了准但吃 CPU</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">pf_type</span>: <span style="color:#e6db74">&#34;adaptive_kld&#34;</span>   <span style="color:#75715e"># KLD 自适应：不确定时自动多撒，收敛后自动减员</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">laser_model_type</span>: <span style="color:#e6db74">&#34;likelihood_field&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">set_initial_pose</span>: <span style="color:#66d9ef">true</span>    <span style="color:#75715e"># 或者每次用 rviz 的 2D Pose Estimate 手动给</span>
+</span></span></code></pre></div><p><code>adaptive_kld</code> 值得单独说一句：粒子撒多了浪费算力，撒少了估计不稳，KLD 采样用信息论的方法动态控制粒子数——刚开局全图乱撒时多用粒子，锁定目标后自动减员。这就是名字里&quot;自适应&quot;的含义。</p>
+<p>调试时最爽的直观体验：rviz2 里加一个 <strong>PoseArray</strong> 显示，订阅 <code>/particle_cloud</code>（或 amcl 的粒子话题），你能亲眼看到一团红色的&quot;假想机器人&quot;从漫天散布一步步收缩到一个点——粒子滤波的教科书动图，在自己屏幕上跑出来。</p>
+<p>被&quot;绑架&quot;了（机器人被搬走）怎么办？调 <code>reinitialize_global_localization</code> 服务，粒子重新全图乱撒，从头再来。</p>
+<h3 id="粒子滤波的死穴维度灾难">粒子滤波的死穴：维度灾难</h3>
+<p>粒子数量随状态维度<strong>指数增长</strong>。定位的状态就三维（x, y, θ），几百到几千个粒子足够；但 SLAM 的状态包含整张地图——几千维，粒子滤波直接爆炸。历史上 FastSLAM 用&quot;每个粒子带一张小地图&quot;的技巧绕过，但现代主流 SLAM（如 <code>slam_toolbox</code>）已经走了另一条路：图优化。所以粒子滤波的地盘很清晰：<strong>低维状态的估计，典型就是定位</strong>。</p>
+<h2 id="五一张表看懂区别">五、一张表看懂区别</h2>
 <table>
-<thead>
-<tr>
-<th>维度</th>
-<th>KF / EKF / UKF</th>
-<th>粒子滤波（MCL/AMCL）</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>信念表示</td>
-<td>一个高斯分布（均值+协方差）</td>
-<td>一堆带权重的粒子</td>
-</tr>
-<tr>
-<td>系统假设</td>
-<td>KF 线性；EKF/UKF 可弱非线性</td>
-<td>任意非线性</td>
-</tr>
-<tr>
-<td>噪声假设</td>
-<td>高斯</td>
-<td>任意分布</td>
-</tr>
-<tr>
-<td>多峰场景</td>
-<td>无能为力（平均出 1.5 楼）</td>
-<td>天然支持</td>
-</tr>
-<tr>
-<td>计算量</td>
-<td>极小（矩阵运算）</td>
-<td>大（随维度指数涨）</td>
-</tr>
-<tr>
-<td>精度特性</td>
-<td>平滑、连续</td>
-<td>收缩后也准，但有抖动</td>
-</tr>
-<tr>
-<td>ROS2 包</td>
-<td><code>robot_localization</code>（ekf/ukf_node）</td>
-<td><code>nav2_amcl</code></td>
-</tr>
-<tr>
-<td>典型任务</td>
-<td>里程计+IMU 融合、平滑速度输出</td>
-<td>已知地图上的激光定位</td>
-</tr>
-<tr>
-<td>死法</td>
-<td>被多峰骗死（精确但错误）</td>
-<td>粒子全灭/贫乏、CPU 烧死</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>维度</th>
+					<th>KF / EKF / UKF</th>
+					<th>粒子滤波（MCL/AMCL）</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>信念表示</td>
+					<td>一个高斯分布（均值+协方差）</td>
+					<td>一堆带权重的粒子</td>
+			</tr>
+			<tr>
+					<td>系统假设</td>
+					<td>KF 线性；EKF/UKF 可弱非线性</td>
+					<td>任意非线性</td>
+			</tr>
+			<tr>
+					<td>噪声假设</td>
+					<td>高斯</td>
+					<td>任意分布</td>
+			</tr>
+			<tr>
+					<td>多峰场景</td>
+					<td>无能为力（平均出 1.5 楼）</td>
+					<td>天然支持</td>
+			</tr>
+			<tr>
+					<td>计算量</td>
+					<td>极小（矩阵运算）</td>
+					<td>大（随维度指数涨）</td>
+			</tr>
+			<tr>
+					<td>精度特性</td>
+					<td>平滑、连续</td>
+					<td>收缩后也准，但有抖动</td>
+			</tr>
+			<tr>
+					<td>ROS2 包</td>
+					<td><code>robot_localization</code>（ekf/ukf_node）</td>
+					<td><code>nav2_amcl</code></td>
+			</tr>
+			<tr>
+					<td>典型任务</td>
+					<td>里程计+IMU 融合、平滑速度输出</td>
+					<td>已知地图上的激光定位</td>
+			</tr>
+			<tr>
+					<td>死法</td>
+					<td>被多峰骗死（精确但错误）</td>
+					<td>粒子全灭/贫乏、CPU 烧死</td>
+			</tr>
+	</tbody>
 </table>
 <p><strong>怎么选，就三句话：</strong></p>
 <ol>
@@ -156,39 +530,314 @@
 <li>嫌高斯单峰不够用，又嫌粒子算不起 → 看看问题能不能降维，或者换 UKF 硬扛</li>
 </ol>
 <p>实际机器人的标准姿势是<strong>两个都用</strong>：<code>ekf_node</code> 在下层管 <code>odom → base_link</code>，<code>amcl</code> 在上层管 <code>map → odom</code>，各守一段 tf，谁也不抢谁的活。</p>
-<h2 id="六不上真车也能玩十分钟体验-amcl"><a href="#六不上真车也能玩十分钟体验-amcl" class="not-prose">六、不上真车也能玩：十分钟体验 AMCL</a></h2>
+<h2 id="六不上真车也能玩十分钟体验-amcl">六、不上真车也能玩：十分钟体验 AMCL</h2>
 <p>没实车也能把粒子滤波跑起来，用 TurtleBot3 的仿真世界：</p>
-<div class="expressive-code"><figure class="frame is-terminal"><figcaption class="header"><span class="title"></span><span class="sr-only">Terminal window</span></figcaption><pre data-language="bash"><code><div class="ec-line"><div class="code"><span style="--0:#96A1C2;--1:#616972"># 终端 1：起 Gazebo 仿真世界</span></div></div><div class="ec-line"><div class="code"><span style="--0:#FF79C6;--1:#BF3441">export</span><span style="--1:#24292E"><span style="--0:#F8F8F2"> </span><span style="--0:#BD93F9">TURTLEBOT3_MODEL</span></span><span style="--0:#FF79C6;--1:#BF3441">=</span><span style="--0:#BD93F9;--1:#24292E">burger</span></div></div><div class="ec-line"><div class="code"><span style="--0:#50FA7B;--1:#6F42C1">ros2</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">launch</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">turtlebot3_gazebo</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">turtlebot3_world.launch.py</span></div></div><div class="ec-line"><div class="code">
-</div></div><div class="ec-line"><div class="code"><span style="--0:#96A1C2;--1:#616972"># 终端 2：起定位（AMCL）+ 已有地图</span></div></div><div class="ec-line"><div class="code"><span style="--0:#50FA7B;--1:#6F42C1">ros2</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">launch</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">nav2_bringup</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">localization_launch.py</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#FF79C6;--1:#005CC5">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#F1FA8C;--1:#032F62">map:=/opt/ros/</span><span style="--0:#BD93F9;--1:#24292E">$ROS_DISTRO</span><span style="--0:#F1FA8C;--1:#032F62">/share/nav2_bringup/maps/turtlebot3_world.yaml</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#FF79C6;--1:#005CC5">\</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#F1FA8C;--1:#032F62">use_sim_time:=</span><span style="--0:#BD93F9;--1:#005CC5">true</span></div></div><div class="ec-line"><div class="code">
-</div></div><div class="ec-line"><div class="code"><span style="--0:#96A1C2;--1:#616972"># 终端 3：rviz2，加 PoseArray 显示，订阅粒子话题</span></div></div><div class="ec-line"><div class="code"><span style="--0:#50FA7B;--1:#6F42C1">ros2</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">launch</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">nav2_bringup</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">rviz_launch.py</span><span style="--0:#F8F8F2;--1:#24292E"> </span><span style="--0:#F1FA8C;--1:#032F62">use_sim_time:=</span><span style="--0:#BD93F9;--1:#005CC5">true</span></div></div></code></pre><div class="copy"><div aria-live="polite"></div><button title="Copy to clipboard" data-copied="Copied!" data-code="export TURTLEBOT3_MODEL=burgerros2 launch turtlebot3_gazebo turtlebot3_world.launch.pyros2 launch nav2_bringup localization_launch.py \    map:=/opt/ros/$ROS_DISTRO/share/nav2_bringup/maps/turtlebot3_world.yaml \    use_sim_time:=trueros2 launch nav2_bringup rviz_launch.py use_sim_time:=true"><div></div></button></div></figure></div>
-<p>然后在 rviz 里玩两件事：用 <strong>2D Pose Estimate</strong> 给一个错得很离谱的初值，看粒子云怎么花几轮观测把自己“掰”回正确位置；再故意把机器人挪个地方，感受一下全局重定位时漫天撒粒子的暴力美学。玩过这一遍，重采样那几行伪代码就再也忘不掉了。</p>
-<h2 id="写在最后"><a href="#写在最后" class="not-prose">写在最后</a></h2>
-<p>回头再看，滤波器本质上是在做<strong>信念管理</strong>：预测让信念变胖，观测让信念变瘦，不同滤波器的差别只是“胖瘦用什么形状记账”。卡尔曼家族用一条钟形曲线记账，又快又优雅，代价是只认一个峰；粒子滤波撒一把假想的自己投票，什么形状都认，代价是算力和调参。</p>
-<p>而“我在哪”只是第一步。地图都没有的时候怎么办？那就轮到 SLAM 登场了——不过那就是下一篇的事了。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 终端 1：起 Gazebo 仿真世界</span>
+</span></span><span style="display:flex;"><span>export TURTLEBOT3_MODEL<span style="color:#f92672">=</span>burger
+</span></span><span style="display:flex;"><span>ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 终端 2：起定位（AMCL）+ 已有地图</span>
+</span></span><span style="display:flex;"><span>ros2 launch nav2_bringup localization_launch.py <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    map:<span style="color:#f92672">=</span>/opt/ros/$ROS_DISTRO/share/nav2_bringup/maps/turtlebot3_world.yaml <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    use_sim_time:<span style="color:#f92672">=</span>true
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 终端 3：rviz2，加 PoseArray 显示，订阅粒子话题</span>
+</span></span><span style="display:flex;"><span>ros2 launch nav2_bringup rviz_launch.py use_sim_time:<span style="color:#f92672">=</span>true
+</span></span></code></pre></div><p>然后在 rviz 里玩两件事：用 <strong>2D Pose Estimate</strong> 给一个错得很离谱的初值，看粒子云怎么花几轮观测把自己&quot;掰&quot;回正确位置；再故意把机器人挪个地方，感受一下全局重定位时漫天撒粒子的暴力美学。玩过这一遍，重采样那几行伪代码就再也忘不掉了。</p>
+<h2 id="写在最后">写在最后</h2>
+<p>回头再看，滤波器本质上是在做<strong>信念管理</strong>：预测让信念变胖，观测让信念变瘦，不同滤波器的差别只是&quot;胖瘦用什么形状记账&quot;。卡尔曼家族用一条钟形曲线记账，又快又优雅，代价是只认一个峰；粒子滤波撒一把假想的自己投票，什么形状都认，代价是算力和调参。</p>
+<p>而&quot;我在哪&quot;只是第一步。地图都没有的时候怎么办？那就轮到 SLAM 登场了——不过那就是下一篇的事了。</p>
 <hr>
 <p>参考：</p>
 <ul>
-<li><a href="https://docs.ros.org/en/humble/package/robot_localization/" rel="noreferrer noopener" target="_blank">robot_localization 官方文档</a></li>
-<li><a href="https://docs.nav2.org/" rel="noreferrer noopener" target="_blank">Nav2 AMCL 文档</a></li>
+<li><a href="https://docs.ros.org/en/humble/package/robot_localization/" target="_blank">robot_localization 官方文档</a></li>
+<li><a href="https://docs.nav2.org/" target="_blank">Nav2 AMCL 文档</a></li>
 <li>Thrun, Burgard, Fox，《概率机器人》（Probabilistic Robotics）第 2-5 章、第 8 章——贝叶斯滤波到粒子滤波的完整推导</li>
 </ul>
-</div></div></article><button class="hover:border-link fixed end-4 bottom-8 z-90 flex h-10 w-10 translate-y-28 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-zinc-200 text-3xl opacity-0 transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:end-8 sm:h-12 sm:w-12 dark:bg-zinc-700" data-show="false" id="to-top-btn"><span class="sr-only">返回顶部</span><svg aria-hidden="true" class="h-6 w-6" fill="none" focusable="false" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 15.75l7.5-7.5 7.5 7.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></main><footer class="text-muted mt-auto flex w-full flex-col items-center justify-center gap-y-2 pt-20 pb-4 text-center align-top font-semibold sm:flex-row sm:justify-between sm:text-xs"><div class="me-0 sm:me-4">&copy; WSB-6662026.<span class="inline-block">&nbsp;🚀&nbsp;翠速小筑&nbsp;🌵&nbsp;</span></div><nav aria-label="Footer" class="sm:divide-muted flex gap-x-2 sm:gap-x-0 sm:divide-x"><a class="hover:text-global-text px-4 py-2 hover:underline sm:py-0" href="/my-blog/">首页</a><a class="hover:text-global-text px-4 py-2 hover:underline sm:py-0" href="/my-blog/posts/">文章</a><a class="hover:text-global-text px-4 py-2 hover:underline sm:py-0" href="/my-blog/tags/">标签</a><a class="hover:text-global-text px-4 py-2 hover:underline sm:py-0" href="/my-blog/about/">关于</a></nav></footer><script type="speculationrules">
-			{
-				"prefetch": [
-					{
-						"where": {
-							"href_matches": "/*"
-						},
-						"eagerness": "immediate"
-					}
-				],
-				"prerender": [
-					{
-						"where": {
-							"href_matches": "/*"
-						},
-						"eagerness": "moderate"
-					}
-				]
-			}
-		</script></body></html><script type="module">var e=document.getElementById(`to-top-btn`),t=document.getElementById(`blog-hero`);function n(t){t.forEach(t=>{e.dataset.show=(!t.isIntersecting).toString()})}e.addEventListener(`click`,()=>{document.documentElement.scrollTo({behavior:`smooth`,top:0})}),new IntersectionObserver(n).observe(t);</script>
+
+        
+      </section>
+
+      
+      <div class="divider"></div>
+      <div class="flex flex-col md:flex-row justify-between gap-4 py-4">
+        
+        <div></div>
+        
+
+        
+        <a role="button" class="btn btn-outline h-12" href="/my-blog/posts/post3/" title="我花了一周，把一台机器人&#34;造&#34;进了电脑里">
+          <div class="inline-flex flex-col items-end">
+            <span class="text-base-content/60 text-xs font-normal">下一页</span>
+            <span class="max-w-48 truncate">我花了一周，把一台机器人&#34;造&#34;进了电脑里</span>
+          </div>
+          <ion-icon name="chevron-forward"></ion-icon>
+        </a>
+        
+      </div>
+      
+
+      
+    </article>
+  </div>
+
+  <div
+    x-data="tocHighlighter()"
+    @scroll.window="debouncedScroll"
+    class="hidden lg:flex lg:flex-col lg:items-end"
+  >
+    
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#一先分清两种滤波">一、先分清两种&quot;滤波&quot;</a></li>
+    <li><a href="#二贝叶斯滤波所有状态估计的祖宗">二、贝叶斯滤波：所有状态估计的祖宗</a></li>
+    <li><a href="#三卡尔曼家族高斯世界的最优解">三、卡尔曼家族：高斯世界的最优解</a>
+      <ul>
+        <li><a href="#kf前提是世界是直的噪声是钟形的">KF：前提是&quot;世界是直的、噪声是钟形的&rdquo;</a></li>
+        <li><a href="#ekf把曲线当成切线">EKF：把曲线当成切线</a></li>
+        <li><a href="#ukf不近似曲线直接在曲线上采样">UKF：不近似曲线，直接在曲线上采样</a></li>
+        <li><a href="#ros2-里的落地robot_localization">ROS2 里的落地：robot_localization</a></li>
+        <li><a href="#家族的死穴只能有一个峰">家族的死穴：只能有一个峰</a></li>
+      </ul>
+    </li>
+    <li><a href="#四粒子滤波用一群假想的自己投票">四、粒子滤波：用一群&quot;假想的自己&quot;投票</a>
+      <ul>
+        <li><a href="#ros2-里的落地nav2-的-amcl">ROS2 里的落地：Nav2 的 AMCL</a></li>
+        <li><a href="#粒子滤波的死穴维度灾难">粒子滤波的死穴：维度灾难</a></li>
+      </ul>
+    </li>
+    <li><a href="#五一张表看懂区别">五、一张表看懂区别</a></li>
+    <li><a href="#六不上真车也能玩十分钟体验-amcl">六、不上真车也能玩：十分钟体验 AMCL</a></li>
+    <li><a href="#写在最后">写在最后</a></li>
+  </ul>
+</nav>
+    
+  </div>
+</div>
+
+
+            
+<footer class="flex flex-col md:flex-row justify-between items-center gap-4 px-4 py-12">
+
+  <div>
+  
+  <p>
+    © 2026 翠速小筑
+  </p>
+  
+
+  
+  <p class="text-sm">
+    🌱
+    <span class="text-base-content/60">
+      Powered by <a class="hover:underline" href="https://gohugo.io/" target="_blank">Hugo</a> with theme
+      <a class="hover:underline" href="https://github.com/g1eny0ung/hugo-theme-dream" target="_blank">Dream</a>.</span
+    >
+  </p>
+  
+</div>
+
+  <div
+  x-data="{ icons: [
+    { name: 'sunny', status: 'n' },
+    { name: 'moon', status: 'y' },
+    { name: 'desktop', status: 'auto' }
+  ] }"
+  class="flex items-center gap-2 h-8 px-2 bg-base-100 border border-base-content/30 rounded-full"
+>
+  <template x-for="icon in icons">
+    <div
+      role="button"
+      tabindex="0"
+      :aria-label="'Select ' + icon.name + ' mode'"
+      class="group inline-flex justify-center items-center p-1 rounded-full cursor-pointer hover:bg-primary"
+      :class="$store.darkMode.icon() === icon.name && 'bg-primary'"
+      @click="$store.darkMode.toggle(icon.status)"
+    >
+      <ion-icon
+        :name="`${icon.name}-outline`"
+        class="group-hover:text-primary-content"
+        :class="$store.darkMode.icon() === icon.name && 'text-primary-content'"
+      >
+      </ion-icon>
+    </div>
+  </template>
+</div>
+
+</footer>
+
+          </div>
+        </div>
+        
+        <div class="back" data-nosnippet>
+        
+          <div class="container">
+            
+              <div class="dream-grid dream-grid-about">
+  
+  
+  
+  <div class="w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-4 dream-column">
+    <article
+      class="card bg-base-100 hover:bg-base-content/10 shadow-xl dark:border dark:border-base-content/30"
+    >
+      <div class="card-body">
+        <div class="card-title">关于</div>
+
+        <div class="prose dark:prose-invert">
+          <p>你好，欢迎来到我的博客 👋</p>
+<p>这里是我记录想法、学习笔记和生活点滴的地方。</p>
+<h2 id="这个博客写些什么">这个博客写些什么</h2>
+<ul>
+<li>技术学习笔记</li>
+<li>项目开发记录</li>
+<li>读书与生活感悟</li>
+</ul>
+<h2 id="联系我">联系我</h2>
+<p>你可以通过页头和页脚的社交链接找到我。</p>
+
+        </div>
+      </div>
+    </article>
+  </div>
+  
+  
+
+  
+
+  
+</div>
+
+            
+
+            
+<footer class="flex flex-col md:flex-row justify-between items-center gap-4 px-4 py-12">
+
+  <div>
+  
+  <p>
+    © 2026 翠速小筑
+  </p>
+  
+
+  
+  <p class="text-sm">
+    🌱
+    <span class="text-base-content/60">
+      Powered by <a class="hover:underline" href="https://gohugo.io/" target="_blank">Hugo</a> with theme
+      <a class="hover:underline" href="https://github.com/g1eny0ung/hugo-theme-dream" target="_blank">Dream</a>.</span
+    >
+  </p>
+  
+</div>
+
+  <div
+  x-data="{ icons: [
+    { name: 'sunny', status: 'n' },
+    { name: 'moon', status: 'y' },
+    { name: 'desktop', status: 'auto' }
+  ] }"
+  class="flex items-center gap-2 h-8 px-2 bg-base-100 border border-base-content/30 rounded-full"
+>
+  <template x-for="icon in icons">
+    <div
+      role="button"
+      tabindex="0"
+      :aria-label="'Select ' + icon.name + ' mode'"
+      class="group inline-flex justify-center items-center p-1 rounded-full cursor-pointer hover:bg-primary"
+      :class="$store.darkMode.icon() === icon.name && 'bg-primary'"
+      @click="$store.darkMode.toggle(icon.status)"
+    >
+      <ion-icon
+        :name="`${icon.name}-outline`"
+        class="group-hover:text-primary-content"
+        :class="$store.darkMode.icon() === icon.name && 'text-primary-content'"
+      >
+      </ion-icon>
+    </div>
+  </template>
+</div>
+
+</footer>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+  <script src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script>
+
+  
+  
+    
+  
+  <script src="/my-blog/js/grid.min.js"></script>
+
+
+
+
+  
+
+<script src="/my-blog/js/main.min.js"></script>
+
+    
+
+
+  <script
+  src="https://cdn.jsdelivr.net/npm/luxon@3.7.2/build/global/luxon.min.js"
+  integrity="sha256-UWxf6lyCvfH7XEcrmq/cqc2m3IBrLBLOnWLC4Pw0gQQ="
+  crossorigin="anonymous"
+></script>
+<script>
+  format()
+
+  function format() {
+    document.querySelectorAll('span[data-format="luxon"]').forEach((el) => {
+      const date = el.textContent
+
+      el.textContent = luxon.DateTime.fromISO(date, { locale: 'zh' }).toFormat(
+        'yyyy年MM月dd日',
+      )
+    })
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+<script src="/my-blog/js/toc.min.js"></script>
+
+
+  
+    <script type="module">
+      import mediumZoom from 'https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/+esm';
+      mediumZoom('#dream-single-post-content img', {
+        background: 'oklch(var(--b1))',
+        margin: 24,
+      })
+    </script>
+  
+
+
+
+
+
+
+    
+
+    
+
+    
+
+    
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@8.0.13/dist/ionicons/ionicons.esm.js" integrity="sha256-46Vf2l/aX0tBSf2YXcaYMxF7JVJl30zn8Y9L9zZNXMA=" crossorigin="anonymous"></script>
+  </body>
+</html>

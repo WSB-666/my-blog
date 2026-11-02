@@ -1,18 +1,19 @@
 ---
-title: '我花了一周，把一台机器人"造"进了电脑里'
-description: '从"在 ROS2 里，一台机器人首先是一堆 XML"讲起，把 URDF 建模、Xacro 复用、Gazebo 加载、ros2_control 控制、launch 编排串成完整链路，并对比另一台只有 1 个 link、0 个关节的无人机模型。'
-publishDate: 2026-10-12T12:00:00+08:00
+title: 我花了一周，把一台机器人"造"进了电脑里
+description: 从"在 ROS2 里，一台机器人首先是一堆 XML"讲起，把 URDF 建模、Xacro 复用、Gazebo 加载、ros2_control 控制、launch 编排串成完整链路，并对比另一台只有 1 个 link、0 个关节的无人机模型。
+date: '2026-10-12T12:00:00+08:00'
 tags:
-  - 建模
-  - 仿真
+- 建模
+- 仿真
+cover: /my-blog/img/covers/post3-robot-simulation.jpg
 ---
-
-# 我花了一周，把一台机器人"造"进了电脑里
 
 > ROS2 学习笔记 · 建模与仿真的完整链路
 > 2026-10-12
 
 ---
+
+<!--more-->
 
 ## 引子
 

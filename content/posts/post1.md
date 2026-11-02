@@ -1,13 +1,16 @@
 ---
-title: "为什么我改了 a，b 也跟着变了？——把 Python 的变量和对象讲清楚"
-description: "从一次「改了 a 却影响 b」的疑惑出发，讲清 Python 的变量到底是什么、可变与不可变的分界线在哪、浅拷贝为什么不够、以及函数默认参数那个经典坑。"
-publishDate: 2026-09-24T12:00:00+08:00
+title: 为什么我改了 a，b 也跟着变了？——把 Python 的变量和对象讲清楚
+description: 从一次「改了 a 却影响 b」的疑惑出发，讲清 Python 的变量到底是什么、可变与不可变的分界线在哪、浅拷贝为什么不够、以及函数默认参数那个经典坑。
+date: '2026-09-24T12:00:00+08:00'
 tags:
-  - Python
-  - 基础
-  - 可变对象
-  - 拷贝
+- Python
+- 基础
+- 可变对象
+- 拷贝
+cover: /my-blog/img/covers/post1-python-variables.jpg
 ---
+
+<!--more-->
 
 ## 一、先看一个让人懵的现象
 

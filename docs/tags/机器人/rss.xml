@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>机器人 on 翠速小筑</title>
+		<link>https://wsb-666.github.io/my-blog/tags/%E6%9C%BA%E5%99%A8%E4%BA%BA/</link>
+		<description>Recent content in 机器人 on 翠速小筑</description>
+		<generator>Hugo</generator>
+		<language>zh-Hans</language>
+		
+		
+		
+		
+			<lastBuildDate>Fri, 02 Oct 2026 12:00:00 +0800</lastBuildDate>
+		
+			<atom:link href="https://wsb-666.github.io/my-blog/tags/%E6%9C%BA%E5%99%A8%E4%BA%BA/rss.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>ROS 2 里的 TF 变换：一只杯子为什么不能直接说「在这里」</title>
+				<link>https://wsb-666.github.io/my-blog/posts/post2/</link>
+				<pubDate>Fri, 02 Oct 2026 12:00:00 +0800</pubDate>
+				<guid>https://wsb-666.github.io/my-blog/posts/post2/</guid>
+				<description></description>
+			</item>
+	</channel>
+</rss>

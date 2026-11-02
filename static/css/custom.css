@@ -1,0 +1,17 @@
+/* 背景柔化：降低细节干扰，保证文字可读 */
+#dream-global-bg {
+  filter: saturate(0.92) brightness(1.01);
+}
+
+/* 覆盖一层极淡的白色（暗色模式为黑色），压住风景图的局部亮部 */
+#dream-global-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.30));
+}
+
+html.dark #dream-global-bg::after {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.30), rgba(0, 0, 0, 0.50));
+}

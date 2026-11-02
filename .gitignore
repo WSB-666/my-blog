@@ -1,28 +1,22 @@
-# build output
+# Hugo 构建缓存
+resources/
+.hugo_build.lock
+public/
+
+# 依赖与旧产物
+node_modules/
 dist/
 .output/
+.astro
 
-# dependencies
-node_modules/
-
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-
-# environment variables
+# 环境变量
 .env
 .env.production
 
-# macOS-specific files
+# 系统文件
 .DS_Store
-
-# misc
 *.pem
 .cache
-.astro
 
 # 手动备份（不发布）
 backup/

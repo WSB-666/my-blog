@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>滤波 on 翠速小筑</title>
+		<link>https://wsb-666.github.io/my-blog/tags/%E6%BB%A4%E6%B3%A2/</link>
+		<description>Recent content in 滤波 on 翠速小筑</description>
+		<generator>Hugo</generator>
+		<language>zh-Hans</language>
+		
+		
+		
+		
+			<lastBuildDate>Sat, 24 Oct 2026 12:00:00 +0800</lastBuildDate>
+		
+			<atom:link href="https://wsb-666.github.io/my-blog/tags/%E6%BB%A4%E6%B3%A2/rss.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>机器人的&#34;我在哪&#34;难题：粒子滤波和卡尔曼滤波在 ROS2 里的分工</title>
+				<link>https://wsb-666.github.io/my-blog/posts/post4/</link>
+				<pubDate>Sat, 24 Oct 2026 12:00:00 +0800</pubDate>
+				<guid>https://wsb-666.github.io/my-blog/posts/post4/</guid>
+				<description>&lt;p&gt;上一篇我把一台机器人&amp;quot;造&amp;quot;进了电脑：URDF 是骨架，Gazebo 是皮肉，ros2_control 是神经。造完之后发现一个更尴尬的事——&lt;strong&gt;这台机器人不知道自己在哪&lt;/strong&gt;。&lt;/p&gt;&#xA;&lt;p&gt;你可能说：轮速里程计不是一直在发 &lt;code&gt;odom → base_link&lt;/code&gt; 的 tf 吗？问题是，让小车原地转两圈再回原点，你会发现它&amp;quot;回家&amp;quot;的位置偏了。轮子打滑、地面摩擦不均，这些误差&lt;strong&gt;只进不出&lt;/strong&gt;，越积越多。IMU 更别提，便宜 MEMS 陀螺仪的零偏漂移，放一晚上能给你漂出十几度。&lt;/p&gt;&#xA;&lt;p&gt;传感器个个都&amp;quot;半信半疑&amp;quot;，那就需要一门手艺：&lt;strong&gt;把多个不靠谱的信息源，融合成一个靠谱的状态估计&lt;/strong&gt;。这就是滤波器在机器人里干的活。&lt;/p&gt;&#xA;&lt;p&gt;这篇把 ROS2 里最常打交道的几类滤波器捋一遍：它们分属哪个门派、假设是什么、在软件栈里各自站在哪一环。&lt;/p&gt;</description>
+			</item>
+	</channel>
+</rss>
